@@ -1,18 +1,23 @@
 package setting.SettingServer;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
+@NoArgsConstructor
+@AllArgsConstructor
 @Getter
+@Builder
 @Setter
 public class ChatMessage {
     private MessageType type;
     private String content;
     private String sender;
+    private String receiver;
 
     public enum MessageType {
         CHAT,
         JOIN,
-        LEAVE
+        LEAVE,
+        SERVER,
+        PRIVATE
     }
 }

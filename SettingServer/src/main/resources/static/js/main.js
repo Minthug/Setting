@@ -1,70 +1,59 @@
-
-'use strict';
-
-var usernamePage = document.querySelector('#username-page');
-var chatPage = document.querySelector('#chat-page');
-var usernameForm = document.querySelector('#usernameForm');
-var messageForm = document.querySelector('#messageForm');
-var messageInput = document.querySelector('#message');
-var messageArea = document.querySelector('#messageArea');
-var connectingElement = document.querySelector('.connecting');
-
 var stompClient = null;
 var username = null;
-
-var colors = [
-    '#2196F3', '#32c787', '#00BCD4', '#ff5652',
-    '#ffc107', '#ff85af', '#FF9800', '#39bbb0'
-];
-
-function connect(event) {
-    username = document.querySelector('#name').value.trim();
-
-    if(username) {
-        usernamePage.classList.add('hidden');
-        chatPage.classList.remove('hidden');
-
+function connect() {
+    username = document.getElementById('name').value.trim();
+    if (username) {
         var socket = new SockJS('/ws');
         stompClient = Stomp.over(socket);
-
         stompClient.connect({}, onConnected, onError);
+    } else {
+        alert('Please enter a username.');
     }
-    event.preventDefault();
 }
 
 function onConnected() {
+    console.log('Connected to WebSocket');
+    // Subscribe to the Public Topic
     stompClient.subscribe('/topic/public', onMessageReceived);
+
+    // Tell your username to the server
     stompClient.send("/app/chat.addUser",
         {},
         JSON.stringify({sender: username, type: 'JOIN'})
     )
-    connectingElement.classList.add('hidden');
+
+    document.querySelector('.chat-container').style.display = 'block';
+    document.querySelector('.join-container').style.display = 'none';
 }
 
 function onError(error) {
-    connectingElement.textContent = 'Could not connect to WebSocket server. Please refresh this page to try again!';
-    connectingElement.style.color = 'red';
+    console.error('Could not connect to WebSocket server. Please refresh this page to try again!', error);
 }
 
-function sendMessage(event) {
-    var messageContent = messageInput.value.trim();
+// 페이지 로드 시 연결 시도
+document.addEventListener('DOMContentLoaded', function() {
+    var connectButton = document.querySelector('#connectButton');
+    if (connectButton) {
+        connectButton.addEventListener('click', connect);
+    }
+});
 
+function sendMessage() {
+    var messageInput = document.getElementById('message');
+    var messageContent = messageInput.value.trim();
     if(messageContent && stompClient) {
         var chatMessage = {
             sender: username,
-            content: messageInput.value,
+            content: messageContent,
             type: 'CHAT'
         };
-
         stompClient.send("/app/chat.sendMessage", {}, JSON.stringify(chatMessage));
         messageInput.value = '';
     }
-    event.preventDefault();
 }
 
 function onMessageReceived(payload) {
     var message = JSON.parse(payload.body);
-
     var messageElement = document.createElement('li');
 
     if(message.type === 'JOIN') {
@@ -75,39 +64,25 @@ function onMessageReceived(payload) {
         message.content = message.sender + ' left!';
     } else {
         messageElement.classList.add('chat-message');
-
-        var avatarElement = document.createElement('i');
-        var avatarText = document.createTextNode(message.sender[0]);
-        avatarElement.appendChild(avatarText);
-        avatarElement.style['background-color'] = getAvatarColor(message.sender);
-
-        messageElement.appendChild(avatarElement);
-
-        var usernameElement = document.createElement('span');
-        var usernameText = document.createTextNode(message.sender);
-        usernameElement.appendChild(usernameText);
+        var usernameElement = document.createElement('strong');
+        usernameElement.textContent = message.sender;
         messageElement.appendChild(usernameElement);
     }
 
-    var textElement = document.createElement('p');
-    var messageText = document.createTextNode(message.content);
-    textElement.appendChild(messageText);
-
+    var textElement = document.createElement('span');
+    textElement.textContent = message.content;
     messageElement.appendChild(textElement);
 
-    messageArea.appendChild(messageElement);
-    messageArea.scrollTop = messageArea.scrollHeight;
+    document.getElementById('messageArea').appendChild(messageElement);
 }
 
-function getAvatarColor(messageSender) {
-    var hash = 0;
-    for (var i = 0; i < messageSender.length; i++) {
-        hash = 31 * hash + messageSender.charCodeAt(i);
-    }
+// Event listeners
+document.querySelector('#joinForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+    connect();
+});
 
-    var index = Math.abs(hash % colors.length);
-    return colors[index];
-}
-
-usernameForm.addEventListener('submit', connect, true)
-messageForm.addEventListener('submit', sendMessage, true)
+document.querySelector('#chatForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+    sendMessage();
+});
