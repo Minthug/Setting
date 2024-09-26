@@ -7,10 +7,15 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.stereotype.Controller;
 import setting.SettingServer.ChatMessage;
+import setting.SettingServer.repository.ChatRoomRepository;
+import setting.SettingServer.service.RedisPubSubService;
 
 @Controller
 @RequiredArgsConstructor
 public class ChatController {
+
+    private final RedisPubSubService redisPubSubService;
+    private final ChatRoomRepository chatRoomRepository;
 
     @MessageMapping("/chat.sendMessage")
     @SendTo("/topic/public")
