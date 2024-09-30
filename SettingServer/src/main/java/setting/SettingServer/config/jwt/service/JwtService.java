@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import setting.SettingServer.config.jwt.dto.TokenDto;
 import setting.SettingServer.entity.JwtTokenType;
 import setting.SettingServer.repository.UserRepository;
 
@@ -117,10 +118,66 @@ public class JwtService {
                 .findFirst();
     }
 
+    public void sendTokens(HttpServletResponse response, String accessToken, String refreshToken, boolean useCookie) {
+        response.setStatus(HttpServletResponse.SC_OK);
+        if (useCookie) {
+            sendTokenCookie(response, ACCESS_TOKEN_COOKIE_NAME, accessToken, accessExpiration);
+            sendTokenCookie(response, REFRESH_TOKEN_COOKIE_NAME, refreshToken, refreshExpiration);
+        } else {
+            sendTokenHeader(response, accessHeader, accessToken);
+            sendTokenHeader(response, refreshHeader, refreshToken);
+        }
+        log.info("Tokens sent successfully");
+    }
+
+    private void sendTokenHeader(HttpServletResponse response, String header, String token) {
+        response.setHeader(header, token);
+    }
+
+    private void sendTokenCookie(HttpServletResponse response, String name, String token, long expiration) {
+        CookieUtil.addCookie(response, name, token, expiration / 1000, true);
+    }
+
+    public void updateStoredToken(String email, String token, boolean isAccessToken) {
+        userRepository.findByEmail(email)
+                .ifPresentOrElse(user -> {
+                    if (isAccessToken) user.updateAccessToken(token);
+                    else user.updateRefreshToken(token);
+                },
+                        () -> log.error("User not found: {}", email));
+    }
+
+    public TokenDto reissueToken(String refreshToken) {
+        if(!isTokenValid(refreshToken)) {
+            throw new IllegalArgumentException("Refresh Token is invalid");
+        }
+
+        String email = extractEmailFromToken(refreshToken)
+                .orElseThrow(() -> new IllegalArgumentException("Failed to extract email from token"));
+
+        String newAccessToken = createToken(email, JwtTokenType.ACCESS);
+        String newRefreshToken = createToken(email, JwtTokenType.REFRESH);
+
+        updateStoredToken(email, newAccessToken, false);
+        return new TokenDto(newAccessToken, newRefreshToken);
+    }
+
     class JwtConstans {
         public static final String ACCESS_TOKEN_SUBJECT = "AccessToken";
         public static final String REFRESH_TOKEN_SUBJECT = "RefreshToken";
         public static final String EMAIL_CLAIMS = "email";
         public static final String BEARER = "Bearer ";
     }
+
+    private static class CookieUtil {
+        public static void addCookie(HttpServletResponse response, String name, String value, long maxAge, boolean httpOnly) {
+            Cookie cookie = new Cookie(name, value);
+            cookie.setPath("/");
+            cookie.setSecure(true);
+            cookie.setMaxAge(7 * 24 * 60 * 60); // 7 Days
+            cookie.setHttpOnly(true);
+            response.addCookie(cookie);
+        }
+    }
 }
+
