@@ -28,10 +28,13 @@ management:
     web:
       exposure:
         include: health,info,metrics
-  metrics:
-    export:
-      prometheus:
-        enabled: true
   endpoint:
     health:
       show-details: always
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+
+spring.security.jwt.secret: b156814eafb6af3b71e38809b301f413265dccd3cb7d60425cd135285a6cb364ea1035a5cc3e5dd612a666c59981e50c36d0509789e555111ef76c1fd1df11be
+spring.security.jwt.expiration: 86400000
