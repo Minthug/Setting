@@ -37,4 +37,8 @@ management:
         enabled: true
 
 spring.security.jwt.secret: b156814eafb6af3b71e38809b301f413265dccd3cb7d60425cd135285a6cb364ea1035a5cc3e5dd612a666c59981e50c36d0509789e555111ef76c1fd1df11be
-spring.security.jwt.expiration: 86400000
+spring.security.jwt.accessExpiration: 3600000
+spring.security.jwt.refreshExpiration: 86400000
+spring.security.jwt.header: Authorization
+
+spring.security.jwt.refresh.header: Refresh
