@@ -16,7 +16,7 @@ public class OauthService {
 
     private final UserRepository userRepository;
     private final JwtService jwtService;
-//    private final AuthService authService;
+    private final AuthService authService;
     private final SocialOauth socialOauth;
 
     public String request(String type) throws IOException {
