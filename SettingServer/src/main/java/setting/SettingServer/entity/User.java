@@ -26,6 +26,8 @@ public class User {
     private String accessToken;
     private String refreshToken;
 
+    private UserRole role;
+
 
     public void updateAccessToken(String accessToken) {
         this.accessToken = accessToken;

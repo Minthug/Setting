@@ -162,6 +162,22 @@ public class JwtService {
         return new TokenDto(newAccessToken, newRefreshToken);
     }
 
+    public void sendAccessAndRefreshToken(HttpServletResponse response, String email, String newRefreshToken) {
+    }
+
+    public Optional<String> extractEmail(String accessToken) {
+        try {
+            return Optional.ofNullable(JWT.require(Algorithm.HMAC256(secret))
+                    .build()
+                    .verify(accessToken)
+                    .getClaim(JwtConstans.EMAIL_CLAIMS)
+                    .asString());
+        } catch (Exception e) {
+            log.error("Failed to extract email from token: {}", e.getMessage());
+            return Optional.empty();
+        }
+    }
+
     class JwtConstans {
         public static final String ACCESS_TOKEN_SUBJECT = "AccessToken";
         public static final String REFRESH_TOKEN_SUBJECT = "RefreshToken";
