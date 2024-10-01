@@ -1,4 +1,4 @@
-package setting.SettingServer;
+package setting.SettingServer.entity;
 
 import lombok.*;
 

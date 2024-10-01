@@ -8,7 +8,7 @@ import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.messaging.SessionConnectedEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
-import setting.SettingServer.ChatMessage;
+import setting.SettingServer.entity.ChatMessage;
 
 @Component
 @Slf4j

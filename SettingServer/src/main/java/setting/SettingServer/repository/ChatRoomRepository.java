@@ -7,7 +7,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.stereotype.Repository;
-import setting.SettingServer.ChatRoom;
+import setting.SettingServer.entity.ChatRoom;
 import setting.SettingServer.service.RedisSubscriberService;
 
 import java.util.HashMap;

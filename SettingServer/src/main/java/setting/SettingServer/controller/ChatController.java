@@ -3,7 +3,7 @@ package setting.SettingServer.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.stereotype.Controller;
-import setting.SettingServer.ChatMessage;
+import setting.SettingServer.entity.ChatMessage;
 import setting.SettingServer.repository.ChatRoomRepository;
 import setting.SettingServer.service.RedisPubSubService;
 

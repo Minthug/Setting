@@ -4,24 +4,37 @@ server:
 spring:
   application:
     name: SettingServer
+
   websocket:
     enabled: true
-    lettuce:
-      pool:
-        max-active: 8
-        max-idle: 8
-        min-idle: 0
+
   data:
     redis:
       host: localhost
       port: 6379
 
+  cloud:
+    gcp:
+      bigquery:
+        credentials:
+          location: file:/Users/minthug/Desktop/ssh/focus-hangout-434407-r6-1cdc39386afe.json
+      storage:
+        bucket: test_bucket_project_8825
+
+  security:
+    jwt:
+      secret: b156814eafb6af3b71e38809b301f413265dccd3cb7d60425cd135285a6cb364ea1035a5cc3e5dd612a666c59981e50c36d0509789e555111ef76c1fd1df11be
+      access-expiration: 3600000  # 1 hour
+      refresh-expiration: 86400000  # 24 hours
+      header: Authorization
+      refresh:
+        header: Refresh
+
 logging:
   level:
-    org:
-      springframework:
-        web: INFO
-        web.socket: DEBUG
+    org.springframework:
+      web: INFO
+      web.socket: DEBUG
 
 management:
   endpoints:
@@ -35,10 +48,3 @@ management:
     metrics:
       export:
         enabled: true
-
-spring.security.jwt.secret: b156814eafb6af3b71e38809b301f413265dccd3cb7d60425cd135285a6cb364ea1035a5cc3e5dd612a666c59981e50c36d0509789e555111ef76c1fd1df11be
-spring.security.jwt.accessExpiration: 3600000
-spring.security.jwt.refreshExpiration: 86400000
-spring.security.jwt.header: Authorization
-
-spring.security.jwt.refresh.header: Refresh

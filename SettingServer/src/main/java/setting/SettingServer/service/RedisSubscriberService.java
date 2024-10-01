@@ -8,7 +8,7 @@ import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
-import setting.SettingServer.ChatMessage;
+import setting.SettingServer.entity.ChatMessage;
 
 @Service
 @Slf4j
