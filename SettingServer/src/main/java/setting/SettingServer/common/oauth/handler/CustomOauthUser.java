@@ -1,4 +1,4 @@
-package setting.SettingServer.common.oauth;
+package setting.SettingServer.common.oauth.handler;
 
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
