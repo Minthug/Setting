@@ -21,6 +21,9 @@ public class User {
     private String name;
     private String password;
 
+    @Column(name = "image_url")
+    private String imageUrl;
+
     private String accessToken;
     private String refreshToken;
 
@@ -56,6 +59,10 @@ public class User {
 
     public void updateName(String name) {
         this.name = name;
+    }
+
+    public void updateProfileImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 
     public void updateUser(String name, String encryptedPassword) {

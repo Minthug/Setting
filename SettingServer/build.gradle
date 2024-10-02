@@ -33,6 +33,8 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.apache.commons:commons-pool2'
 
+	runtimeOnly 'org.postgresql:postgresql'
+
 	// 추가적인 유용한 라이브러리들
 	implementation 'org.apache.commons:commons-lang3'
 	implementation 'com.google.guava:guava:30.1.1-jre'
@@ -50,11 +52,11 @@ dependencies {
 	implementation 'com.google.cloud:google-cloud-storage:2.39.0'
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 
-
-
 	compileOnly 'org.projectlombok:lombok'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	annotationProcessor 'org.projectlombok:lombok'
+	implementation 'org.mapstruct:mapstruct:1.4.2.Final'
+	annotationProcessor 'org.mapstruct:mapstruct-processor:1.4.2.Final'
 
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
