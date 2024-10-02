@@ -1,8 +1,11 @@
 package setting.SettingServer.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import setting.SettingServer.common.oauth.GetSocialOauthRes;
+import setting.SettingServer.common.oauth.OauthToken;
 import setting.SettingServer.common.oauth.SocialOauth;
 import setting.SettingServer.config.jwt.service.JwtService;
 import setting.SettingServer.repository.UserRepository;
@@ -12,7 +15,7 @@ import java.io.IOException;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class OauthService {
+public class OauthService implements SocialOauth {
 
     private final UserRepository userRepository;
     private final JwtService jwtService;
@@ -23,4 +26,11 @@ public class OauthService {
         String redirectUrl = socialOauth.getOauthRedirectURL(type);
         return redirectUrl;
     }
+
+    @Override
+    public String getOauthRedirectURL(String type) {
+        return "";
+    }
 }
+
+
