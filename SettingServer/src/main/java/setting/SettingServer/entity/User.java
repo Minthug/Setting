@@ -34,7 +34,7 @@ public class User {
     private UserRole role;
 
     @Enumerated(EnumType.STRING)
-    private UserType type;
+    private OauthType type;
 
     public void updateAccessToken(String accessToken) {
         this.accessToken = accessToken;
@@ -44,7 +44,7 @@ public class User {
         this.refreshToken = refreshToken;
     }
 
-    public void updateUserType(UserType type) {
+    public void updateUserType(OauthType type) {
         this.type = type;
     }
 

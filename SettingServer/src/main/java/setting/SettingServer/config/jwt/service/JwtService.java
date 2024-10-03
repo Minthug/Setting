@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import setting.SettingServer.common.CookieUtils;
 import setting.SettingServer.config.jwt.dto.TokenDto;
 import setting.SettingServer.entity.JwtTokenType;
 import setting.SettingServer.repository.UserRepository;
@@ -160,7 +161,7 @@ public class JwtService {
     }
 
     private void sendTokenCookie(HttpServletResponse response, String name, String token, long expiration) {
-        CookieUtil.addCookie(response, name, token, expiration / 1000, true);
+        CookieUtils.addCookie(response, name, token, expiration / 1000, true);
     }
 
     // Token Storage
@@ -195,17 +196,6 @@ public class JwtService {
         public static final String REFRESH_TOKEN_SUBJECT = "RefreshToken";
         public static final String EMAIL_CLAIMS = "email";
         public static final String BEARER = "Bearer ";
-    }
-
-    private static class CookieUtil {
-        public static void addCookie(HttpServletResponse response, String name, String value, long maxAge, boolean httpOnly) {
-            Cookie cookie = new Cookie(name, value);
-            cookie.setPath("/");
-            cookie.setSecure(true);
-            cookie.setMaxAge(7 * 24 * 60 * 60); // 7 Days
-            cookie.setHttpOnly(true);
-            response.addCookie(cookie);
-        }
     }
 }
 

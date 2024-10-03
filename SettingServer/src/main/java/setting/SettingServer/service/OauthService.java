@@ -1,36 +1,39 @@
 package setting.SettingServer.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import setting.SettingServer.common.oauth.GetSocialOauthRes;
-import setting.SettingServer.common.oauth.OauthToken;
-import setting.SettingServer.common.oauth.SocialOauth;
-import setting.SettingServer.config.jwt.service.JwtService;
-import setting.SettingServer.repository.UserRepository;
-
-import java.io.IOException;
+import org.springframework.web.client.RestTemplate;
+import setting.SettingServer.entity.OauthUser;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class OauthService implements SocialOauth {
+public class OauthService {
 
-    private final UserRepository userRepository;
-    private final JwtService jwtService;
-    private final AuthService authService;
-    private final SocialOauth socialOauth;
+    @Value("${spring.security.oauth2.client.provider.google.authorization-uri}")
+    private String authorizationUri;
+    @Value("${spring.security.oauth2.client.registration.{provider}.client-id}")
+    private String clientId;
+    @Value("${spring.security.oauth2.client.registration.{provider}.redirect-uri}")
+    private String redirectUri;
+    @Value("${spring.security.oauth2.client.registration.{provider}.client-secret}")
+    private String clientSecret;
+    @Value("${spring.security.oauth2.client.registration.{provider}.scope}")
+    private String scope;
+    @Value("${spring.security.oauth2.client.registration.{provider}.token-uri}")
+    private String tokenUri;
+    @Value("${spring.security.oauth2.client.registration.{provider}.user-info-uri}")
+    private String userInfoUri;
 
-    public String request(String type) throws IOException {
-        String redirectUrl = socialOauth.getOauthRedirectURL(type);
-        return redirectUrl;
-    }
+    private final ObjectMapper objectMapper;
+    private final RestTemplate restTemplate;
 
-    @Override
-    public String getOauthRedirectURL(String type) {
-        return "";
-    }
+
 }
 
 

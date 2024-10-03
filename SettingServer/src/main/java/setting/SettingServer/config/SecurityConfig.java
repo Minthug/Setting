@@ -1,7 +1,6 @@
 package setting.SettingServer.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.Filter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,7 +20,6 @@ import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import setting.SettingServer.common.oauth.CustomOauthUserService;
 import setting.SettingServer.common.oauth.handler.OauthLoginFailureHandler;
 import setting.SettingServer.common.oauth.handler.OauthLoginSuccessHandler;
 import setting.SettingServer.config.jwt.filter.CustomJsonUsernamePasswordAuthenticationFilter;

@@ -14,7 +14,7 @@ import setting.SettingServer.dto.SignUpRequestDto;
 import setting.SettingServer.entity.JwtTokenType;
 import setting.SettingServer.entity.User;
 import setting.SettingServer.entity.UserRole;
-import setting.SettingServer.entity.UserType;
+import setting.SettingServer.entity.OauthType;
 import setting.SettingServer.repository.UserRepository;
 
 import java.security.InvalidParameterException;
@@ -40,7 +40,7 @@ public class AuthService {
                 .password(signUpRequestDto.getPassword())
                 .name(signUpRequestDto.getName())
                 .role(UserRole.USER)
-                .type(UserType.LOCAL)
+                .type(OauthType.LOCAL)
                 .build();
 
         user.hashPassword(encoder);
@@ -77,11 +77,11 @@ public class AuthService {
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         if (user.getType() == null) {
-            user.updateUserType(UserType.LOCAL);
+            user.updateUserType(OauthType.LOCAL);
             userRepository.save(user);
         }
 
-        if (user.getType() == UserType.LOCAL) {
+        if (user.getType() == OauthType.LOCAL) {
             if (!encoder.matches(loginDto.getPassword(), user.getPassword())) {
                 throw new IllegalArgumentException("Password not matched");
             }
@@ -99,12 +99,12 @@ public class AuthService {
 
     @Transactional
     public User registerOrUpdateUser(String email, String name, String providerId, String provider) {
-        UserType userType = getUserTypeFromProvider(provider);
+        OauthType oauthType = getUserTypeFromProvider(provider);
 
         return userRepository.findByEmail(email)
                 .map(user -> {
                     user.updateName(name);
-                    user.updateUserType(userType);
+                    user.updateUserType(oauthType);
                     user.updateOauthInfo(providerId, provider);
                     return user;
                 })
@@ -115,22 +115,22 @@ public class AuthService {
                             .providerId(providerId)
                             .provider(provider)
                             .role(UserRole.USER)
-                            .type(userType)
+                            .type(oauthType)
                             .build();
                     return userRepository.save(newUser);
                 });
     }
 
-    private UserType getUserTypeFromProvider(String provider) {
+    private OauthType getUserTypeFromProvider(String provider) {
         switch (provider.toUpperCase()) {
             case "google":
-                return UserType.GOOGLE;
+                return OauthType.GOOGLE;
             case "kakao":
-                return UserType.KAKAO;
+                return OauthType.KAKAO;
             case "naver":
-                return UserType.NAVER;
+                return OauthType.NAVER;
             case "local":
-                return UserType.LOCAL;
+                return OauthType.LOCAL;
             default:
                 throw new IllegalArgumentException("Unsupported provider: " + provider);
         }
