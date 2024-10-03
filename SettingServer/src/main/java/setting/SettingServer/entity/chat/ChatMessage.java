@@ -1,4 +1,4 @@
-package setting.SettingServer.entity;
+package setting.SettingServer.entity.chat;
 
 import lombok.*;
 

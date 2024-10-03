@@ -1,4 +1,4 @@
-package setting.SettingServer.service;
+package setting.SettingServer.service.redis;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

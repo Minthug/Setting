@@ -10,11 +10,12 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
-import setting.SettingServer.common.JwtAuthenticationException;
+import setting.SettingServer.common.exception.JwtAuthenticationException;
 import setting.SettingServer.config.jwt.service.JwtService;
 import setting.SettingServer.entity.JwtTokenType;
-import setting.SettingServer.entity.User;
+import setting.SettingServer.entity.Member;
 import setting.SettingServer.repository.UserRepository;
 
 import java.io.IOException;
@@ -25,6 +26,9 @@ import java.util.Set;
 @RequiredArgsConstructor
 @Slf4j
 public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
+
+    private static final String AUTHORIZATION_HEADER = "Authorization";
+    private static final String BEARER_PREFIX = "Bearer ";
 
     private static final Set<String> NO_CHECK_URL = new HashSet<>(Arrays.asList(
             "/login", "/signup", "/refresh", "/v1/oauth/authorization/{provider}",
@@ -42,55 +46,68 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
         }
 
         try {
-            processJwtAuthentication(request, response, filterChain);
+            String token = resolveToken(request);
+            if (StringUtils.hasText(token)) {
+                if (jwtService.isRefreshToken(token)) {
+                    processRefreshToken(response, token);
+                    return;
+                } else if (jwtService.validateToken(token)) {
+                    Authentication authentication = jwtService.getAuthentication(token);
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                }
+            }
         } catch (Exception e) {
             handlerFilterException(response, e);
+            return;
         }
-    }
-
-
-    private void processJwtAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String refreshToken = jwtService.extractRefreshToken(request)
-                .filter(jwtService::isTokenValid)
-                .orElse(null);
-
-        if (refreshToken != null) {
-            processRefreshToken(response, refreshToken);
-        } else {
-            processAccessToken(request, response, filterChain);
-        }
-    }
-
-    private void processRefreshToken(HttpServletResponse response, String refreshToken) {
-        userRepository.findByRefreshToken(refreshToken)
-                .ifPresentOrElse(
-                        user -> reissueTokens(response, user),
-                        () -> {
-                            log.warn("Refresh token is valid but user not found");
-                            throw new JwtAuthenticationException("Refresh token is valid but user not found");
-                        }
-                );
-    }
-
-    private void reissueTokens(HttpServletResponse response, User user) {
-        String newRefreshToken = reIssueRefreshToken(user);
-        jwtService.sendAccessAndRefreshToken(response, user.getEmail(), newRefreshToken);
-    }
-
-    private String reIssueRefreshToken(User user) {
-        String reIssueRefreshToken = jwtService.createToken(user.getEmail(), JwtTokenType.REFRESH);
-        user.updateRefreshToken(reIssueRefreshToken);
-        userRepository.saveAndFlush(user);
-        return reIssueRefreshToken;
-    }
-
-    private void processAccessToken(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws IOException, ServletException{
-        jwtService.extractAccessToken(request)
-                .filter(jwtService::isTokenValid)
-                .ifPresent(this::authenticationUser);
 
         filterChain.doFilter(request, response);
     }
+
+    private String resolveToken(HttpServletRequest request) {
+        String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
+        if (bearerToken != null && bearerToken.startsWith(BEARER_PREFIX)) {
+            return bearerToken.substring(BEARER_PREFIX.length());
+        }
+        return null;
+    }
+
+    private void processAccessToken(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain, String accessToken) throws IOException, ServletException{
+        if (jwtService.validateToken(accessToken)) {
+            jwtService.extractAccessToken(request)
+                    .filter(jwtService::validateToken)
+                    .ifPresent(this::authenticationUser);
+
+        }
+
+        filterChain.doFilter(request, response);
+    }
+
+    private void processRefreshToken(HttpServletResponse response, String refreshToken) {
+        if (jwtService.validateToken(refreshToken)) {
+            jwtService.extractEmail(refreshToken)
+                            .flatMap(userRepository::findByEmail)
+                    .ifPresentOrElse(
+                    user -> {
+                        if (refreshToken.equals(user.getRefreshToken())) {
+                            String newAccessToken = jwtService.createToken(user.getEmail(), JwtTokenType.ACCESS);
+                            String newRefreshToken = jwtService.createToken(user.getEmail(), JwtTokenType.REFRESH);
+                            user.updateRefreshToken(newRefreshToken);
+                            userRepository.save(user);
+                            jwtService.sendAccessAndRefreshToken(response, newAccessToken, newRefreshToken);
+                        } else {
+                            throw new JwtAuthenticationException("Refresh token doesn't match");
+                        }
+                    },
+                    () -> {
+                        throw new JwtAuthenticationException("User not found for the given refresh token");
+                    }
+            );
+        } else {
+            throw new JwtAuthenticationException("Invalid refresh token");
+        }
+    }
+
 
     private void authenticationUser(String accessToken) {
         jwtService.extractEmail(accessToken)
@@ -98,26 +115,28 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
                 .ifPresent(this::saveAuthentication);
     }
 
-    private void saveAuthentication(User user) {
-        UserDetails userDetails = createUserDetails(user);
+    private void saveAuthentication(Member member) {
+        UserDetails userDetails = createUserDetails(member);
         Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authentication);
-    }
-
-    private UserDetails createUserDetails(User user) {
-        return org.springframework.security.core.userdetails.User.builder()
-                .username(user.getEmail())
-                .password("")
-                .authorities(user.getRole().name())
-                .build();
     }
 
     private boolean isNoCheckUrl(String requestURI) {
         return NO_CHECK_URL.contains(requestURI);
     }
 
+    private UserDetails createUserDetails(Member member) {
+        return org.springframework.security.core.userdetails.User.builder()
+                .username(member.getEmail())
+                .password("")
+                .authorities(member.getRole().name())
+                .build();
+    }
+
     private void handlerFilterException(HttpServletResponse response, Exception e) throws IOException {
         log.error("Jwt Authentication error: {}", e);
         response.sendError(HttpServletResponse.SC_UNAUTHORIZED, e.getMessage());
+        response.setContentType("application/json");
+        response.getWriter().write("{\"error\": \"" + e.getMessage() + "\"}");
     }
 }

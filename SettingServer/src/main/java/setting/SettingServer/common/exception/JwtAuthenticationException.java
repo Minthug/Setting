@@ -1,4 +1,4 @@
-package setting.SettingServer.common;
+package setting.SettingServer.common.exception;
 
 public class JwtAuthenticationException extends RuntimeException {
     public JwtAuthenticationException(String message) {

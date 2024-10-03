@@ -1,4 +1,4 @@
-package setting.SettingServer.config;
+package setting.SettingServer.config.redis;
 
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;

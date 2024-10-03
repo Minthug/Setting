@@ -1,4 +1,4 @@
-package setting.SettingServer.service;
+package setting.SettingServer.service.redis;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -8,7 +8,7 @@ import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
-import setting.SettingServer.entity.ChatMessage;
+import setting.SettingServer.entity.chat.ChatMessage;
 
 @Service
 @Slf4j

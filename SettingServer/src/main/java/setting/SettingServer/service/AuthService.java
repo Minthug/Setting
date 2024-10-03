@@ -6,13 +6,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import setting.SettingServer.common.DuplicateEmailException;
+import setting.SettingServer.common.exception.DuplicateEmailException;
 import setting.SettingServer.config.jwt.dto.TokenDto;
 import setting.SettingServer.config.jwt.service.JwtService;
 import setting.SettingServer.dto.LoginDto;
 import setting.SettingServer.dto.SignUpRequestDto;
 import setting.SettingServer.entity.JwtTokenType;
-import setting.SettingServer.entity.User;
+import setting.SettingServer.entity.Member;
 import setting.SettingServer.entity.UserRole;
 import setting.SettingServer.entity.OauthType;
 import setting.SettingServer.repository.UserRepository;
@@ -35,7 +35,7 @@ public class AuthService {
         validateUniqueInfo(signUpRequestDto);
         validateRequiredFields(signUpRequestDto);
 
-        User user = User.builder()
+        Member member = Member.builder()
                 .email(signUpRequestDto.getEmail())
                 .password(signUpRequestDto.getPassword())
                 .name(signUpRequestDto.getName())
@@ -43,8 +43,8 @@ public class AuthService {
                 .type(OauthType.LOCAL)
                 .build();
 
-        user.hashPassword(encoder);
-        userRepository.save(user);
+        member.hashPassword(encoder);
+        userRepository.save(member);
     }
 
     private void validateRequiredFields(SignUpRequestDto dto) {
@@ -73,43 +73,43 @@ public class AuthService {
 
     @Transactional
     public TokenDto login(LoginDto loginDto) {
-        User user = userRepository.findByEmail(loginDto.getEmail())
+        Member member = userRepository.findByEmail(loginDto.getEmail())
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        if (user.getType() == null) {
-            user.updateUserType(OauthType.LOCAL);
-            userRepository.save(user);
+        if (member.getType() == null) {
+            member.updateMemberType(OauthType.LOCAL);
+            userRepository.save(member);
         }
 
-        if (user.getType() == OauthType.LOCAL) {
-            if (!encoder.matches(loginDto.getPassword(), user.getPassword())) {
+        if (member.getType() == OauthType.LOCAL) {
+            if (!encoder.matches(loginDto.getPassword(), member.getPassword())) {
                 throw new IllegalArgumentException("Password not matched");
             }
         }
 
-        String accessToken = jwtService.createToken(user.getEmail(), JwtTokenType.ACCESS);
-        String refreshToken = jwtService.createToken(user.getEmail(), JwtTokenType.REFRESH);
+        String accessToken = jwtService.createToken(member.getEmail(), JwtTokenType.ACCESS);
+        String refreshToken = jwtService.createToken(member.getEmail(), JwtTokenType.REFRESH);
 
 //        jwtService.updateStoredToken(user.getEmail(), refreshToken, true); // access token은 바로 사용되므로 저장하지 않음
-        jwtService.updateStoredToken(user.getEmail(), accessToken, false);
+        jwtService.updateStoredToken(member.getEmail(), accessToken, false);
 
         return new TokenDto(accessToken, refreshToken);
     }
 
 
     @Transactional
-    public User registerOrUpdateUser(String email, String name, String providerId, String provider) {
+    public Member registerOrUpdateUser(String email, String name, String providerId, String provider) {
         OauthType oauthType = getUserTypeFromProvider(provider);
 
         return userRepository.findByEmail(email)
                 .map(user -> {
                     user.updateName(name);
-                    user.updateUserType(oauthType);
+                    user.updateMemberType(oauthType);
                     user.updateOauthInfo(providerId, provider);
                     return user;
                 })
                 .orElseGet(() -> {
-                    User newUser = User.builder()
+                    Member newMember = Member.builder()
                             .email(email)
                             .name(name)
                             .providerId(providerId)
@@ -117,7 +117,7 @@ public class AuthService {
                             .role(UserRole.USER)
                             .type(oauthType)
                             .build();
-                    return userRepository.save(newUser);
+                    return userRepository.save(newMember);
                 });
     }
 

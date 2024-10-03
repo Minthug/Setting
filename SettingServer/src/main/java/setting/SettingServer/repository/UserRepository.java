@@ -2,18 +2,18 @@ package setting.SettingServer.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import setting.SettingServer.entity.OauthType;
-import setting.SettingServer.entity.User;
+import setting.SettingServer.entity.Member;
 
 import java.util.Optional;
 
-public interface UserRepository extends JpaRepository<User, Long> {
+public interface UserRepository extends JpaRepository<Member, Long> {
 
-    Optional<User> findByEmail(String email);
+    Optional<Member> findByEmail(String email);
 
-    Optional<User> findByRefreshToken(String refreshToken);
+    Optional<Member> findByRefreshToken(String refreshToken);
 
-    Optional<User> findByName(String name);
+    Optional<Member> findByName(String name);
 
-    Optional<User> findByOauthTypeAndProvider(OauthType oauthType, String providerId);
+    Optional<Member> findByOauthTypeAndProvider(OauthType oauthType, String providerId);
 }
 

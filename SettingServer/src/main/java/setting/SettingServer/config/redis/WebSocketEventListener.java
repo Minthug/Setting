@@ -1,4 +1,4 @@
-package setting.SettingServer.config;
+package setting.SettingServer.config.redis;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,7 +8,7 @@ import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.messaging.SessionConnectedEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
-import setting.SettingServer.entity.ChatMessage;
+import setting.SettingServer.entity.chat.ChatMessage;
 
 @Component
 @Slf4j

@@ -1,4 +1,4 @@
-package setting.SettingServer.config;
+package setting.SettingServer.config.redis;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;

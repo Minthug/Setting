@@ -7,12 +7,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.List;
+
 @Entity
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class User {
+public class Member {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,6 +38,10 @@ public class User {
     @Enumerated(EnumType.STRING)
     private OauthType type;
 
+    public <T> Member(String subject, String s, List<T> ts) {
+
+    }
+
     public void updateAccessToken(String accessToken) {
         this.accessToken = accessToken;
     }
@@ -44,7 +50,7 @@ public class User {
         this.refreshToken = refreshToken;
     }
 
-    public void updateUserType(OauthType type) {
+    public void updateMemberType(OauthType type) {
         this.type = type;
     }
 
@@ -65,7 +71,7 @@ public class User {
         this.imageUrl = imageUrl;
     }
 
-    public void updateUser(String name, String encryptedPassword) {
+    public void updateMember(String name, String encryptedPassword) {
         if (name != null && !name.isEmpty()) this.name = name;
         if (password != null && !password.isEmpty()) this.password = password;
     }

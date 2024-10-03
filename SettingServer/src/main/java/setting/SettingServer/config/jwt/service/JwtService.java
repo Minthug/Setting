@@ -1,7 +1,11 @@
 package setting.SettingServer.config.jwt.service;
 
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.algorithms.Algorithm;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -9,13 +13,25 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
-import setting.SettingServer.common.CookieUtils;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+import setting.SettingServer.common.exception.InvalidTokenException;
+import setting.SettingServer.common.exception.UserNotFoundException;
 import setting.SettingServer.config.jwt.dto.TokenDto;
 import setting.SettingServer.entity.JwtTokenType;
+import setting.SettingServer.entity.Member;
 import setting.SettingServer.repository.UserRepository;
 
+import javax.annotation.PostConstruct;
+import java.io.IOException;
+import java.security.Key;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -26,8 +42,10 @@ import java.util.stream.Stream;
 @Slf4j
 public class JwtService {
     // Constants
-    private static final String ACCESS_TOKEN_COOKIE_NAME = "accessToken";
-    private static final String REFRESH_TOKEN_COOKIE_NAME = "refreshToken";
+    private static final String ACCESS_TOKEN_SUBJECT = "accessToken";
+    private static final String REFRESH_TOKEN_SUBJECT = "refreshToken";
+    private static final String EMAIL_CLAIM = "email";
+    private static final String BEARER_PREFIX = "Bearer ";
 
     // Configuration properties
     @Value("${spring.security.jwt.secret}")
@@ -42,23 +60,45 @@ public class JwtService {
     @Value("${spring.security.jwt.header}")
     private String accessHeader;
 
-    @Value("${spring.security.jwt.refreshHeader}")
+    @Value("${spring.security.jwt.refresh.header}")
     private String refreshHeader;
 
     // Dependencies
     private final UserRepository userRepository;
+    private Key key;
+
+    @PostConstruct
+    public void init() {
+        byte[] keyBytes = Decoders.BASE64.decode(secret);
+        this.key = Keys.hmacShaKeyFor(keyBytes);
+    }
+
+    public boolean isRefreshToken(String token) {
+        try {
+            Claims claims = Jwts.parser()
+                    .setSigningKey(secret)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+            return JwtTokenType.REFRESH.equals(claims.get(REFRESH_TOKEN_SUBJECT));
+        } catch (JwtException e) {
+            return false;
+        }
+    }
 
     // Token Creation
     public String createToken(String email, JwtTokenType type) {
         Date now = new Date();
         Date expiration = calculateExpirationDate(now, type);
-        String subject = type == JwtTokenType.ACCESS ? JwtConstans.ACCESS_TOKEN_SUBJECT : JwtConstans.REFRESH_TOKEN_SUBJECT;
+        String subject = type == JwtTokenType.ACCESS ? ACCESS_TOKEN_SUBJECT : REFRESH_TOKEN_SUBJECT;
 
-        return JWT.create()
-                .withSubject(subject)
-                .withExpiresAt(expiration)
-                .withClaim(JwtConstans.EMAIL_CLAIMS, email)
-                .sign(Algorithm.HMAC256(secret));
+        return Jwts.builder()
+                .setSubject(subject)
+                .setIssuedAt(now)
+                .setExpiration(expiration)
+                .claim(EMAIL_CLAIM, email)
+                .signWith(key, SignatureAlgorithm.HS512)
+                .compact();
     }
 
     private Date calculateExpirationDate(Date now, JwtTokenType type) {
@@ -66,59 +106,63 @@ public class JwtService {
         return new Date(now.getTime() + expirationPeriod);
     }
 
+    public Authentication getAuthentication(String token) {
+        Claims claims = Jwts.parser()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
+        UserDetails user = new User(claims.getSubject(), "", Collections.emptyList());
+        return new UsernamePasswordAuthenticationToken(user, "", Collections.emptyList());
+    }
+
     // Token Validation
-    public boolean isTokenValid(String token) {
+    public boolean validateToken(String token) {
         try {
-            JWT.require(Algorithm.HMAC256(secret))
-                    .build()
-                    .verify(token);
+            Jwts.parser().setSigningKey(key).build().parseSignedClaims(token);
             return true;
-        } catch (Exception e) {
-            log.error("Token is invalid: {}", e.getMessage());
+        } catch (JwtException | IllegalArgumentException e) {
+            log.error("Invalid JWT token: {}", e.getMessage());
             return false;
         }
     }
 
-    // Token Extraction
+    public Optional<String> extractEmail(String token) {
+        try {
+            return Optional.ofNullable(Jwts.parser()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody()
+                    .get(EMAIL_CLAIM, String.class));
+        } catch (JwtException e) {
+            log.error("Failed to extract email from token: {}", e.getMessage());
+            return Optional.empty();
+        }
+    }
+
     public Optional<String> extractAccessToken(HttpServletRequest request) {
-        return extractTokenFromHeader(request, accessHeader, true);
+        return extractTokenFromHeader(request, accessHeader);
     }
 
     public Optional<String> extractRefreshToken(HttpServletRequest request) {
-        log.info("Attempting to extract Refresh Token");
-
         return Stream.of(
-                        extractTokenFromHeader(request, refreshHeader, true),
-                        extractTokenFromHeader(request, refreshHeader, false),
-                        extractTokenFromCookie(request, REFRESH_TOKEN_COOKIE_NAME),
-                        Optional.ofNullable(request.getParameter(REFRESH_TOKEN_COOKIE_NAME))
+                        extractTokenFromHeader(request, refreshHeader),
+                        extractTokenFromCookie(request, REFRESH_TOKEN_SUBJECT),
+                        Optional.ofNullable(request.getParameter(REFRESH_TOKEN_SUBJECT))
                 )
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .findFirst();
     }
 
-    public Optional<String> extractEmail(String accessToken) {
-        return extractEmailFromToken(accessToken);
-    }
-
-    private Optional<String> extractEmailFromToken(String token) {
-        try {
-            return Optional.ofNullable(JWT.require(Algorithm.HMAC256(secret))
-                    .build()
-                    .verify(token)
-                    .getClaim(JwtConstans.EMAIL_CLAIMS)
-                    .asString());
-        } catch (Exception e) {
-            log.error("Failed to extract email from token: {}", e.getMessage());
-            return Optional.empty();
+    private Optional<String> extractTokenFromHeader(HttpServletRequest request, String headerName) {
+        String bearerToken = request.getHeader(headerName);
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(BEARER_PREFIX)) {
+            return Optional.of(bearerToken.substring(7));
         }
-    }
-
-    private Optional<String> extractTokenFromHeader(HttpServletRequest request, String headerName, boolean withBearer) {
-        return Optional.ofNullable(request.getHeader(headerName))
-                .filter(token -> !withBearer || token.startsWith(JwtConstans.BEARER))
-                .map(token -> withBearer ? token.replace(JwtConstans.BEARER, "") : token);
+        return Optional.empty();
     }
 
     private Optional<String> extractTokenFromCookie(HttpServletRequest request, String cookieName) {
@@ -127,41 +171,6 @@ public class JwtService {
                         .filter(cookie -> cookieName.equals(cookie.getName()))
                         .findFirst()
                         .map(Cookie::getValue));
-    }
-
-    // Token Sending
-    public void sendTokens(HttpServletResponse response, String accessToken, String refreshToken, boolean useCookie) {
-        response.setStatus(HttpServletResponse.SC_OK);
-        if (useCookie) {
-            sendTokenCookie(response, ACCESS_TOKEN_COOKIE_NAME, accessToken, accessExpiration);
-            sendTokenCookie(response, REFRESH_TOKEN_COOKIE_NAME, refreshToken, refreshExpiration);
-        } else {
-            sendTokenHeader(response, accessHeader, accessToken);
-            sendTokenHeader(response, refreshHeader, refreshToken);
-        }
-        log.info("Tokens sent successfully");
-    }
-
-    public void sendAccessAndRefreshToken(HttpServletResponse response, String email, String newRefreshToken) {
-        String newAccessToken = createToken(email, JwtTokenType.ACCESS);
-        updateStoredToken(email, newAccessToken, false);
-        sendTokens(response, newAccessToken, newRefreshToken, true);
-    }
-
-    public void sendAccessAndRefreshTokenCookie(HttpServletResponse response, String accessToken, String refreshToken) {
-        sendTokens(response, accessToken, refreshToken, true);
-    }
-
-    public void sendAccessAndRefreshTokenHeader(HttpServletResponse response, String accessToken, String refreshToken) {
-        sendTokens(response, accessToken, refreshToken, false);
-    }
-
-    private void sendTokenHeader(HttpServletResponse response, String header, String token) {
-        response.setHeader(header, token);
-    }
-
-    private void sendTokenCookie(HttpServletResponse response, String name, String token, long expiration) {
-        CookieUtils.addCookie(response, name, token, expiration / 1000, true);
     }
 
     // Token Storage
@@ -174,28 +183,62 @@ public class JwtService {
                         () -> log.error("User not found: {}", email));
     }
 
-    // Token Reissue
-    public TokenDto reissueToken(String refreshToken) {
-        if(!isTokenValid(refreshToken)) {
-            throw new IllegalArgumentException("Refresh Token is invalid");
+
+    public void updateStoredRefreshToken(String email, String refreshToken) {
+        userRepository.findByEmail(email)
+                .ifPresentOrElse(
+                        user -> {
+                            user.updateRefreshToken(refreshToken);
+                            userRepository.save(user);
+                        },
+                        () -> log.error("User not found for email: {}", email)
+                );
+    }
+
+    @Transactional
+    public TokenDto reissueTokens(String refreshToken) {
+        if (!validateToken(refreshToken)) {
+            throw new InvalidTokenException("Invalid refresh token");
         }
 
-        String email = extractEmailFromToken(refreshToken)
-                .orElseThrow(() -> new IllegalArgumentException("Failed to extract email from token"));
+        String email = extractEmail(refreshToken)
+                .orElseThrow(() -> new InvalidTokenException("Could not extract email from refresh token"));
+
+        Member member = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("User not found for email: " + email));
+
+        if (!refreshToken.equals(member.getRefreshToken())) {
+            throw new InvalidTokenException("Refresh token does not match stored token");
+        }
 
         String newAccessToken = createToken(email, JwtTokenType.ACCESS);
         String newRefreshToken = createToken(email, JwtTokenType.REFRESH);
+        updateStoredRefreshToken(email, newRefreshToken);
 
-        updateStoredToken(email, newAccessToken, false);
         return new TokenDto(newAccessToken, newRefreshToken);
     }
 
-    // Inner classes and utilities
-    static class JwtConstans {
-        public static final String ACCESS_TOKEN_SUBJECT = "AccessToken";
-        public static final String REFRESH_TOKEN_SUBJECT = "RefreshToken";
-        public static final String EMAIL_CLAIMS = "email";
-        public static final String BEARER = "Bearer ";
+    public void sendAccessAndRefreshToken(HttpServletResponse response, String accessToken, String refreshToken) {
+        response.setHeader(accessHeader, "Bearer " + accessToken);
+
+        response.setHeader(refreshHeader, refreshToken);
+
+
+        Cookie refreshTokenCookie = new Cookie("refresh_token", refreshToken);
+        refreshTokenCookie.setHttpOnly(true);
+//        refreshTokenCookie.setSecure(true); HTTPS only
+        refreshTokenCookie.setPath("/");
+        response.addCookie(refreshTokenCookie);
+
+        response.setStatus(HttpServletResponse.SC_OK);
+
+        try {
+            String tokenJSON = String.format("{\"accessToken\":\"%s\",\"refreshToken\":\"%s\"}", accessToken, refreshToken);
+            response.setContentType("application/json");
+            response.getWriter().write(tokenJSON);
+        } catch (IOException e) {
+            log.error("Error writing tokens to response", e);
+        }
     }
 }
 
