@@ -22,6 +22,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import setting.SettingServer.common.oauth.handler.OauthLoginFailureHandler;
 import setting.SettingServer.common.oauth.handler.OauthLoginSuccessHandler;
+import setting.SettingServer.common.oauth.service.CustomOAuth2UserService;
 import setting.SettingServer.config.jwt.filter.CustomJsonUsernamePasswordAuthenticationFilter;
 import setting.SettingServer.config.jwt.filter.JwtAuthenticationProcessingFilter;
 import setting.SettingServer.config.jwt.handler.LoginFailureHandler;
@@ -44,7 +45,7 @@ public class SecurityConfig {
     private final LoginService loginService;
     private final OauthLoginSuccessHandler oauthLoginSuccessHandler;
     private final OauthLoginFailureHandler oauthLoginFailureHandler;
-    private final CustomOauthUserService customOauthUserService;
+    private final CustomOAuth2UserService customOauthUserService;
 
     private static final String[] PUBLIC_URLS = {
             "/v1/auth/**", "/v1/upload/**", "/v1/boards","/oauth2/authorization/**", "/",

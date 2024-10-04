@@ -14,7 +14,7 @@ import setting.SettingServer.repository.HttpCookieOAuth2AuthorizationRequestRepo
 
 import java.io.IOException;
 
-import static setting.SettingServer.repository.HttpCookieOAuth2AuthorizationRequestRepository.REDIRECT_URI_PARAM_COOKIE_NAME
+import static setting.SettingServer.repository.HttpCookieOAuth2AuthorizationRequestRepository.REDIRECT_URI_PARAM_COOKIE_NAME;
 
 @Slf4j
 @Component

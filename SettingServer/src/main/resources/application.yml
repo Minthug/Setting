@@ -6,17 +6,16 @@ spring:
     name: SettingServer
 
   datasource:
-    url: jdbc:postgresql://localhost:5433/basic
+    url: jdbc:postgresql://localhost:5432/basic
     username: minseok
     password: 1234
     driver-class-name: org.postgresql.Driver
-
   jpa:
     hibernate:
       ddl-auto: validate
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
+        dialect: org.hibernate.dialect.PostgresSQLDialect
         format_sql: true
         show_sql: true
         default_batch_fetch_size: 100
