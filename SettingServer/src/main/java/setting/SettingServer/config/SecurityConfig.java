@@ -29,7 +29,7 @@ import setting.SettingServer.config.jwt.handler.LoginFailureHandler;
 import setting.SettingServer.config.jwt.handler.LoginSuccessHandler;
 import setting.SettingServer.config.jwt.service.JwtService;
 import setting.SettingServer.config.jwt.service.LoginService;
-import setting.SettingServer.repository.UserRepository;
+import setting.SettingServer.repository.MemberRepository;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -40,7 +40,7 @@ import java.util.Collections;
 public class SecurityConfig {
 
     private final JwtService jwtService;
-    private final UserRepository userRepository;
+    private final MemberRepository memberRepository;
     private final ObjectMapper objectMapper;
     private final LoginService loginService;
     private final OauthLoginSuccessHandler oauthLoginSuccessHandler;
@@ -73,7 +73,7 @@ public class SecurityConfig {
 
     @Bean
     public JwtAuthenticationProcessingFilter jwtAuthenticationProcessingFilter() {
-        JwtAuthenticationProcessingFilter jwtAuthenticationProcessingFilter = new JwtAuthenticationProcessingFilter(jwtService, userRepository);
+        JwtAuthenticationProcessingFilter jwtAuthenticationProcessingFilter = new JwtAuthenticationProcessingFilter(jwtService, memberRepository);
         return jwtAuthenticationProcessingFilter;
     }
 
@@ -132,7 +132,7 @@ public class SecurityConfig {
 
     @Bean
     public LoginSuccessHandler loginSuccessHandler() {
-        return new LoginSuccessHandler(jwtService, userRepository);
+        return new LoginSuccessHandler(jwtService, memberRepository);
     }
 
     @Bean

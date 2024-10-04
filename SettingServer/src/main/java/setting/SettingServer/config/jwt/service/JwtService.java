@@ -25,7 +25,7 @@ import setting.SettingServer.common.exception.UserNotFoundException;
 import setting.SettingServer.config.jwt.dto.TokenDto;
 import setting.SettingServer.entity.JwtTokenType;
 import setting.SettingServer.entity.Member;
-import setting.SettingServer.repository.UserRepository;
+import setting.SettingServer.repository.MemberRepository;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
@@ -51,10 +51,10 @@ public class JwtService {
     @Value("${spring.security.jwt.secret}")
     private String secret;
 
-    @Value("${spring.security.jwt.accessExpiration}")
+    @Value("${spring.security.jwt.access-expiration}")
     private long accessExpiration;
 
-    @Value("${spring.security.jwt.refreshExpiration}")
+    @Value("${spring.security.jwt.refresh-expiration}")
     private long refreshExpiration;
 
     @Value("${spring.security.jwt.header}")
@@ -64,7 +64,7 @@ public class JwtService {
     private String refreshHeader;
 
     // Dependencies
-    private final UserRepository userRepository;
+    private final MemberRepository memberRepository;
     private Key key;
 
     @PostConstruct
@@ -175,7 +175,7 @@ public class JwtService {
 
     // Token Storage
     public void updateStoredToken(String email, String token, boolean isAccessToken) {
-        userRepository.findByEmail(email)
+        memberRepository.findByEmail(email)
                 .ifPresentOrElse(user -> {
                             if (isAccessToken) user.updateAccessToken(token);
                             else user.updateRefreshToken(token);
@@ -185,11 +185,11 @@ public class JwtService {
 
 
     public void updateStoredRefreshToken(String email, String refreshToken) {
-        userRepository.findByEmail(email)
+        memberRepository.findByEmail(email)
                 .ifPresentOrElse(
                         user -> {
                             user.updateRefreshToken(refreshToken);
-                            userRepository.save(user);
+                            memberRepository.save(user);
                         },
                         () -> log.error("User not found for email: {}", email)
                 );
@@ -204,7 +204,7 @@ public class JwtService {
         String email = extractEmail(refreshToken)
                 .orElseThrow(() -> new InvalidTokenException("Could not extract email from refresh token"));
 
-        Member member = userRepository.findByEmail(email)
+        Member member = memberRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("User not found for email: " + email));
 
         if (!refreshToken.equals(member.getRefreshToken())) {

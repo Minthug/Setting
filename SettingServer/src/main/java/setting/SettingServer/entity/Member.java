@@ -7,8 +7,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.util.List;
-
 @Entity
 @Getter
 @NoArgsConstructor
@@ -36,11 +34,9 @@ public class Member {
     private UserRole role;
 
     @Enumerated(EnumType.STRING)
-    private OauthType type;
+    private oauthType type;
 
-    public <T> Member(String subject, String s, List<T> ts) {
-
-    }
+//    public <T> Member(String subject, String s, List<T> ts) { }
 
     public void updateAccessToken(String accessToken) {
         this.accessToken = accessToken;
@@ -50,7 +46,7 @@ public class Member {
         this.refreshToken = refreshToken;
     }
 
-    public void updateMemberType(OauthType type) {
+    public void updateOauthType(oauthType type) {
         this.type = type;
     }
 

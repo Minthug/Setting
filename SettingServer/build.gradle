@@ -33,6 +33,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.apache.commons:commons-pool2'
 
+	implementation 'org.postgresql:postgresql'
 	runtimeOnly 'org.postgresql:postgresql'
 
 	// 추가적인 유용한 라이브러리들

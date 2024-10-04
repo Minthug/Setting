@@ -12,10 +12,10 @@ spring:
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: create-drop
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.PostgresSQLDialect
+        dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
         show_sql: true
         default_batch_fetch_size: 100
@@ -31,6 +31,7 @@ spring:
     redis:
       host: localhost
       port: 6379
+      database: 0
 
   cloud:
     gcp:
@@ -61,8 +62,8 @@ spring:
             client-name: Google
             authorization-grant-type: authorization_code
           naver:
-            client-id: ${NAVER_CLIENT_ID}
-            client-secret: ${NAVER_CLIENT_SECRET}
+            client-id: JZyot9UmRasVMMTiGn1I
+            client-secret: YulxRS0e6F
             scope:
               - name
               - email
@@ -71,8 +72,8 @@ spring:
             authorization-grant-type: authorization_code
             redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
           kakao:
-            client-id: ${KAKAO_CLIENT_ID}
-            client-secret: ${KAKAO_CLIENT_SECRET}
+            client-id: 3ad7f886a9bab530b840abf8ee5c8b58
+            client-secret: b3PqoMFX9UMDpNPjwWoWnCaw2MMv86DY
             scope:
               - profile_nickname
               - account_email

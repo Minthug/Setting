@@ -11,7 +11,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import setting.SettingServer.config.jwt.service.JwtService;
 import setting.SettingServer.entity.JwtTokenType;
-import setting.SettingServer.repository.UserRepository;
+import setting.SettingServer.repository.MemberRepository;
 
 import java.io.IOException;
 
@@ -20,7 +20,7 @@ import java.io.IOException;
 public class LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     private final JwtService jwtService;
-    private final UserRepository userRepository;
+    private final MemberRepository memberRepository;
 
     @Value("${spring.security.jwt.access-expiration}")
     private String accessTokenExpiration;
@@ -33,10 +33,10 @@ public class LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
         jwtService.sendAccessAndRefreshToken(response, accessToken, refreshToken);
 
-        userRepository.findByEmail(email)
+        memberRepository.findByEmail(email)
                 .ifPresent(user -> {
                     user.updateRefreshToken(refreshToken);
-                    userRepository.saveAndFlush(user);
+                    memberRepository.saveAndFlush(user);
                 });
 
         log.info("Login Success. email: {}", email);

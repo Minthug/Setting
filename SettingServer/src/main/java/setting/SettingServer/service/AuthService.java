@@ -14,8 +14,8 @@ import setting.SettingServer.dto.SignUpRequestDto;
 import setting.SettingServer.entity.JwtTokenType;
 import setting.SettingServer.entity.Member;
 import setting.SettingServer.entity.UserRole;
-import setting.SettingServer.entity.OauthType;
-import setting.SettingServer.repository.UserRepository;
+import setting.SettingServer.entity.oauthType;
+import setting.SettingServer.repository.MemberRepository;
 
 import java.security.InvalidParameterException;
 import java.util.DuplicateFormatFlagsException;
@@ -25,10 +25,10 @@ import java.util.DuplicateFormatFlagsException;
 @RequiredArgsConstructor
 public class AuthService {
 
-    private final UserRepository userRepository;
+    private final MemberRepository memberRepository;
     private final JwtService jwtService;
     private final PasswordEncoder encoder;
-    private final UserService userService;
+    private final MemberService memberService;
 
     @Transactional
     public void signUp(SignUpRequestDto signUpRequestDto) throws Exception {
@@ -40,11 +40,11 @@ public class AuthService {
                 .password(signUpRequestDto.getPassword())
                 .name(signUpRequestDto.getName())
                 .role(UserRole.USER)
-                .type(OauthType.LOCAL)
+                .type(oauthType.LOCAL)
                 .build();
 
         member.hashPassword(encoder);
-        userRepository.save(member);
+        memberRepository.save(member);
     }
 
     private void validateRequiredFields(SignUpRequestDto dto) {
@@ -62,26 +62,26 @@ public class AuthService {
     }
 
     private void validateUniqueInfo(SignUpRequestDto dto) {
-        if (userRepository.findByEmail(dto.getEmail()).isPresent()) {
+        if (memberRepository.findByEmail(dto.getEmail()).isPresent()) {
             throw new DuplicateEmailException("Email already exists");
         }
 
-        if (userRepository.findByName(dto.getName()).isPresent()) {
+        if (memberRepository.findByName(dto.getName()).isPresent()) {
             throw new DuplicateFormatFlagsException("Name already exists");
         }
     }
 
     @Transactional
     public TokenDto login(LoginDto loginDto) {
-        Member member = userRepository.findByEmail(loginDto.getEmail())
+        Member member = memberRepository.findByEmail(loginDto.getEmail())
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         if (member.getType() == null) {
-            member.updateMemberType(OauthType.LOCAL);
-            userRepository.save(member);
+            member.updateOauthType(oauthType.LOCAL);
+            memberRepository.save(member);
         }
 
-        if (member.getType() == OauthType.LOCAL) {
+        if (member.getType() == oauthType.LOCAL) {
             if (!encoder.matches(loginDto.getPassword(), member.getPassword())) {
                 throw new IllegalArgumentException("Password not matched");
             }
@@ -99,12 +99,12 @@ public class AuthService {
 
     @Transactional
     public Member registerOrUpdateUser(String email, String name, String providerId, String provider) {
-        OauthType oauthType = getUserTypeFromProvider(provider);
+        oauthType oauthType = getUserTypeFromProvider(provider);
 
-        return userRepository.findByEmail(email)
+        return memberRepository.findByEmail(email)
                 .map(user -> {
                     user.updateName(name);
-                    user.updateMemberType(oauthType);
+                    user.updateOauthType(oauthType);
                     user.updateOauthInfo(providerId, provider);
                     return user;
                 })
@@ -117,20 +117,20 @@ public class AuthService {
                             .role(UserRole.USER)
                             .type(oauthType)
                             .build();
-                    return userRepository.save(newMember);
+                    return memberRepository.save(newMember);
                 });
     }
 
-    private OauthType getUserTypeFromProvider(String provider) {
+    private oauthType getUserTypeFromProvider(String provider) {
         switch (provider.toUpperCase()) {
             case "google":
-                return OauthType.GOOGLE;
+                return oauthType.GOOGLE;
             case "kakao":
-                return OauthType.KAKAO;
+                return oauthType.KAKAO;
             case "naver":
-                return OauthType.NAVER;
+                return oauthType.NAVER;
             case "local":
-                return OauthType.LOCAL;
+                return oauthType.LOCAL;
             default:
                 throw new IllegalArgumentException("Unsupported provider: " + provider);
         }

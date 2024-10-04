@@ -16,7 +16,7 @@ import setting.SettingServer.common.exception.JwtAuthenticationException;
 import setting.SettingServer.config.jwt.service.JwtService;
 import setting.SettingServer.entity.JwtTokenType;
 import setting.SettingServer.entity.Member;
-import setting.SettingServer.repository.UserRepository;
+import setting.SettingServer.repository.MemberRepository;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -36,7 +36,7 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
             "/v1/oauth/{type}"));
 
     private final JwtService jwtService;
-    private final UserRepository userRepository;
+    private final MemberRepository memberRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -86,14 +86,14 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
     private void processRefreshToken(HttpServletResponse response, String refreshToken) {
         if (jwtService.validateToken(refreshToken)) {
             jwtService.extractEmail(refreshToken)
-                            .flatMap(userRepository::findByEmail)
+                            .flatMap(memberRepository::findByEmail)
                     .ifPresentOrElse(
                     user -> {
                         if (refreshToken.equals(user.getRefreshToken())) {
                             String newAccessToken = jwtService.createToken(user.getEmail(), JwtTokenType.ACCESS);
                             String newRefreshToken = jwtService.createToken(user.getEmail(), JwtTokenType.REFRESH);
                             user.updateRefreshToken(newRefreshToken);
-                            userRepository.save(user);
+                            memberRepository.save(user);
                             jwtService.sendAccessAndRefreshToken(response, newAccessToken, newRefreshToken);
                         } else {
                             throw new JwtAuthenticationException("Refresh token doesn't match");
@@ -111,7 +111,7 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
 
     private void authenticationUser(String accessToken) {
         jwtService.extractEmail(accessToken)
-                .flatMap(userRepository::findByEmail)
+                .flatMap(memberRepository::findByEmail)
                 .ifPresent(this::saveAuthentication);
     }
 
