@@ -38,4 +38,6 @@ public class OauthLoginFailureHandler extends SimpleUrlAuthenticationFailureHand
 
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
     }
+
+
 }

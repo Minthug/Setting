@@ -1,7 +1,11 @@
 package setting.SettingServer.entity;
 
-import lombok.Getter;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+@Getter
+@RequiredArgsConstructor
 public enum OauthType {
 
     GOOGLE("google"),
@@ -9,9 +13,5 @@ public enum OauthType {
     NAVER("naver"),
     LOCAL("local");
 
-    @Getter
-    private final String text;
-    OauthType(String text) {
-        this.text = text;
-    }
+    private final String registrationId;
 }
