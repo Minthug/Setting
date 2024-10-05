@@ -1,6 +1,6 @@
 package setting.SettingServer.user;
 
-import setting.SettingServer.entity.oauthType;
+import setting.SettingServer.entity.ProviderType;
 
 import java.util.Map;
 
@@ -64,8 +64,8 @@ public class GoogleOAuth2UserInfo implements OAuth2UserInfo {
     }
 
     @Override
-    public oauthType getProvider() {
-        return oauthType.GOOGLE;
+    public ProviderType getProvider() {
+        return ProviderType.GOOGLE;
     }
 
     @Override

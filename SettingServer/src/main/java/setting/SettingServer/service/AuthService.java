@@ -14,7 +14,7 @@ import setting.SettingServer.dto.SignUpRequestDto;
 import setting.SettingServer.entity.JwtTokenType;
 import setting.SettingServer.entity.Member;
 import setting.SettingServer.entity.UserRole;
-import setting.SettingServer.entity.oauthType;
+import setting.SettingServer.entity.ProviderType;
 import setting.SettingServer.repository.MemberRepository;
 
 import java.security.InvalidParameterException;
@@ -40,7 +40,7 @@ public class AuthService {
                 .password(signUpRequestDto.getPassword())
                 .name(signUpRequestDto.getName())
                 .role(UserRole.USER)
-                .type(oauthType.LOCAL)
+                .type(ProviderType.LOCAL)
                 .build();
 
         member.hashPassword(encoder);
@@ -77,11 +77,11 @@ public class AuthService {
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         if (member.getType() == null) {
-            member.updateOauthType(oauthType.LOCAL);
+            member.updateProviderType(ProviderType.LOCAL);
             memberRepository.save(member);
         }
 
-        if (member.getType() == oauthType.LOCAL) {
+        if (member.getType() == ProviderType.LOCAL) {
             if (!encoder.matches(loginDto.getPassword(), member.getPassword())) {
                 throw new IllegalArgumentException("Password not matched");
             }
@@ -99,12 +99,12 @@ public class AuthService {
 
     @Transactional
     public Member registerOrUpdateUser(String email, String name, String providerId, String provider) {
-        oauthType oauthType = getUserTypeFromProvider(provider);
+        ProviderType providerType = getUserTypeFromProvider(provider);
 
         return memberRepository.findByEmail(email)
                 .map(user -> {
                     user.updateName(name);
-                    user.updateOauthType(oauthType);
+                    user.updateProviderType(providerType);
                     user.updateOauthInfo(providerId, provider);
                     return user;
                 })
@@ -115,22 +115,22 @@ public class AuthService {
                             .providerId(providerId)
                             .provider(provider)
                             .role(UserRole.USER)
-                            .type(oauthType)
+                            .type(providerType)
                             .build();
                     return memberRepository.save(newMember);
                 });
     }
 
-    private oauthType getUserTypeFromProvider(String provider) {
+    private ProviderType getUserTypeFromProvider(String provider) {
         switch (provider.toUpperCase()) {
             case "google":
-                return oauthType.GOOGLE;
+                return ProviderType.GOOGLE;
             case "kakao":
-                return oauthType.KAKAO;
+                return ProviderType.KAKAO;
             case "naver":
-                return oauthType.NAVER;
+                return ProviderType.NAVER;
             case "local":
-                return oauthType.LOCAL;
+                return ProviderType.LOCAL;
             default:
                 throw new IllegalArgumentException("Unsupported provider: " + provider);
         }

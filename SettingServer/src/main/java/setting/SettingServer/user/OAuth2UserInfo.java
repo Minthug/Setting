@@ -1,13 +1,13 @@
 package setting.SettingServer.user;
 
-import setting.SettingServer.entity.oauthType;
+import setting.SettingServer.entity.ProviderType;
 
 import java.util.Map;
 
 public interface OAuth2UserInfo {
 
 
-    oauthType getProvider();
+    ProviderType getProvider();
 
     String getAccessToken();
 

@@ -1,6 +1,6 @@
 package setting.SettingServer.user;
 
-import setting.SettingServer.entity.oauthType;
+import setting.SettingServer.entity.ProviderType;
 
 import java.util.Map;
 
@@ -48,8 +48,8 @@ public class KakaoOAuth2UserInfo implements OAuth2UserInfo {
     }
 
     @Override
-    public oauthType getProvider() {
-        return oauthType.KAKAO;
+    public ProviderType getProvider() {
+        return ProviderType.KAKAO;
     }
 
     @Override

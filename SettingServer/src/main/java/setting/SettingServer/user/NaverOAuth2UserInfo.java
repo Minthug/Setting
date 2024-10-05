@@ -1,6 +1,6 @@
 package setting.SettingServer.user;
 
-import setting.SettingServer.entity.oauthType;
+import setting.SettingServer.entity.ProviderType;
 
 import java.util.Map;
 
@@ -40,8 +40,8 @@ public class NaverOAuth2UserInfo implements OAuth2UserInfo {
     }
 
     @Override
-    public oauthType getProvider() {
-        return oauthType.NAVER;
+    public ProviderType getProvider() {
+        return ProviderType.NAVER;
     }
 
     @Override

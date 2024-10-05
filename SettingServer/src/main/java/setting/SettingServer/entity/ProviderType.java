@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum oauthType {
+public enum ProviderType {
 
     GOOGLE("google"),
     KAKAO("kakao"),

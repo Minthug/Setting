@@ -2,7 +2,7 @@ package setting.SettingServer.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import setting.SettingServer.entity.Member;
-import setting.SettingServer.entity.oauthType;
+import setting.SettingServer.entity.ProviderType;
 
 import java.util.Optional;
 
@@ -14,6 +14,6 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 
     Optional<Member> findByName(String name);
 
-    Optional<Member> findByTypeAndProvider(oauthType oauthType, String providerId);
+    Optional<Member> findByTypeAndProvider(ProviderType providerType, String providerId);
 }
 

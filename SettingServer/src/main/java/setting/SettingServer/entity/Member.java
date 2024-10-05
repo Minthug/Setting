@@ -34,7 +34,7 @@ public class Member {
     private UserRole role;
 
     @Enumerated(EnumType.STRING)
-    private oauthType type;
+    private ProviderType type;
 
 //    public <T> Member(String subject, String s, List<T> ts) { }
 
@@ -46,7 +46,7 @@ public class Member {
         this.refreshToken = refreshToken;
     }
 
-    public void updateOauthType(oauthType type) {
+    public void updateProviderType(ProviderType type) {
         this.type = type;
     }
 
