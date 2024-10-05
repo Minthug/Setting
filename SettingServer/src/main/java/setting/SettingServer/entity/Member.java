@@ -38,6 +38,15 @@ public class Member {
 
 //    public <T> Member(String subject, String s, List<T> ts) { }
 
+
+    public Member(long id, String email, String name, String imageUrl, ProviderType type) {
+        this.id = id;
+        this.email = email;
+        this.name = name;
+        this.imageUrl = imageUrl;
+        this.type = type;
+    }
+
     public void updateAccessToken(String accessToken) {
         this.accessToken = accessToken;
     }

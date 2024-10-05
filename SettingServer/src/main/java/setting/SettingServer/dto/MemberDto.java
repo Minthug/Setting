@@ -1,6 +1,7 @@
 package setting.SettingServer.dto;
 
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import setting.SettingServer.entity.Member;
@@ -9,6 +10,7 @@ import setting.SettingServer.entity.ProviderType;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode
 public class MemberDto {
 
     private Long id;

@@ -45,6 +45,10 @@ dependencies {
 	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
 	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
 
+	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
+	testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+	testImplementation 'org.mockito:mockito-junit-jupiter:3.6.28'
+
 	implementation 'com.auth0:java-jwt:4.2.1'
 
 	// Google Cloud Platform Storage(GCP Storage)
