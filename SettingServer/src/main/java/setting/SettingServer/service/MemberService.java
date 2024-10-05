@@ -17,7 +17,6 @@ import java.util.concurrent.TimeUnit;
 
 @Service
 @Slf4j
-@RequiredArgsConstructor
 public class MemberService {
 
     private final MemberRepository memberRepository; // PostgreSQL
@@ -50,4 +49,5 @@ public class MemberService {
                 })
                 .orElseThrow(() -> new UserNotFoundException("Member not found with id: " + id));
     }
+
 }
