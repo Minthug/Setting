@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins:400,500,600,700&display=swap">
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}" />
+
+
+</head>
+<body>
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-card-header" ><img th:src="@{/images/Logo.png}" style="height:60px; width:50%; padding: 10px" alt="Logo"/></div>
+        <form th:action="@{/user/login}" method="post">
+            <div class="login-form-group">
+                <label class="login-form-label" for="username">이름</label>
+                <input type="text" class="login-input" id="username" name="username" placeholder="사용자명을 입력하세요">
+            </div>
+            <div class="login-form-group">
+                <label class="login-form-label" for="password">패스워드</label>
+                <input type="password" class="login-input" id="password" name="password" placeholder="비밀번호를 입력하세요">
+            </div>
+            <button type="submit" class="login-button">로그인</button>
+
+            <!-- 소셜 로그인 버튼 -->
+            <div class="social-login">
+                <a href="/oauth2/authorization/kakao">
+                    <img th:src="@{/images/kakaologin.png}" style="height:55px; width:100%" alt="Kakao Login"/>
+                </a>
+                <a href="/oauth2/authorization/naver">
+                    <img th:src="@{/images/naverlogin.png}" style="height:55px; width:100%" alt="Naver Login"/>
+                </a>
+                <a href="/oauth2/authorization/google">
+                    <img th:src="@{/images/googlelogin.png}" style="height:55px; width:100%" alt="Google Login"/>
+                </a>
+
+            </div>
+        </form>
+
+        <!-- 회원가입 링크 -->
+        <div class="login-links">
+            아직 계정이 없으신가요? <a href="/user/signup" class="signup-link">회원가입</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>

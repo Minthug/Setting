@@ -60,7 +60,10 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(configurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .formLogin(form -> form.disable())
+                .formLogin(form -> form.loginPage("/user/login")
+                        .loginProcessingUrl("/")
+                        .defaultSuccessUrl("/success")
+                        .failureUrl("/user/login"))
                 .httpBasic(basic -> basic.disable())
                 .headers(headers -> headers.frameOptions().disable())
                 .authorizeHttpRequests(auth -> configureAuthorizeHttpRequests(auth))
@@ -90,9 +93,9 @@ public class SecurityConfig {
     private void configureOauth2Login(OAuth2LoginConfigurer<HttpSecurity> oauth2) {
         oauth2
                 .authorizationEndpoint(authorizationEndPoint ->
-                        authorizationEndPoint.baseUri("/oauth2/authorization"))
+                        authorizationEndPoint.baseUri("/v1/auth/oauth2/authorization"))
                 .redirectionEndpoint(redirectionEndPoint ->
-                        redirectionEndPoint.baseUri("/login/oauth/code/*"))
+                        redirectionEndPoint.baseUri("/v1/auth/login/oauth2/code/*"))
                 .successHandler(oauthLoginSuccessHandler)
                 .failureHandler(oauthLoginFailureHandler)
                 .userInfoEndpoint(userInfo -> userInfo.userService(customOauthUserService));
