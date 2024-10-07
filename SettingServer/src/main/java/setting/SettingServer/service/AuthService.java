@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import setting.SettingServer.common.exception.DuplicateEmailException;
 import setting.SettingServer.config.jwt.dto.TokenDto;
 import setting.SettingServer.config.jwt.service.JwtService;
+import setting.SettingServer.common.oauth.RequestOAuthInfoService;
 import setting.SettingServer.dto.LoginDto;
 import setting.SettingServer.dto.SignUpRequestDto;
 import setting.SettingServer.entity.JwtTokenType;
@@ -16,6 +17,8 @@ import setting.SettingServer.entity.Member;
 import setting.SettingServer.entity.UserRole;
 import setting.SettingServer.entity.ProviderType;
 import setting.SettingServer.repository.MemberRepository;
+import setting.SettingServer.user.OAuth2UserInfo;
+import setting.SettingServer.user.OAuthLoginParams;
 
 import java.security.InvalidParameterException;
 import java.util.DuplicateFormatFlagsException;
@@ -29,6 +32,13 @@ public class AuthService {
     private final JwtService jwtService;
     private final PasswordEncoder encoder;
     private final MemberService memberService;
+    private final RequestOAuthInfoService oAuthInfoService;
+
+    public TokenDto login(OAuthLoginParams params) {
+        OAuth2UserInfo oAuth2UserInfo = oAuthInfoService.request(params);
+        String email = findOrCreateMember(oAuth2UserInfo);
+        return jwtService.createToken(email, JwtTokenType.ACCESS);
+    }
 
     @Transactional
     public void signUp(SignUpRequestDto signUpRequestDto) throws Exception {
