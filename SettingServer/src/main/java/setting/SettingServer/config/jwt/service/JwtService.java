@@ -25,6 +25,7 @@ import setting.SettingServer.common.exception.UserNotFoundException;
 import setting.SettingServer.config.jwt.dto.TokenDto;
 import setting.SettingServer.entity.JwtTokenType;
 import setting.SettingServer.entity.Member;
+import setting.SettingServer.entity.ProviderType;
 import setting.SettingServer.repository.MemberRepository;
 
 import javax.annotation.PostConstruct;
