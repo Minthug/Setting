@@ -89,7 +89,10 @@ public class SecurityConfig {
 
     private void configureOauth2Login(OAuth2LoginConfigurer<HttpSecurity> oauth2) {
         oauth2
-                .loginPage("/v1/oauth/oauth2/authorization/{provider}")
+                .authorizationEndpoint(authorizationEndPoint ->
+                        authorizationEndPoint.baseUri("/oauth2/authorization"))
+                .redirectionEndpoint(redirectionEndPoint ->
+                        redirectionEndPoint.baseUri("/login/oauth/code/*"))
                 .successHandler(oauthLoginSuccessHandler)
                 .failureHandler(oauthLoginFailureHandler)
                 .userInfoEndpoint(userInfo -> userInfo.userService(customOauthUserService));

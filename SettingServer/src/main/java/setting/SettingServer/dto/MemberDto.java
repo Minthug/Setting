@@ -7,11 +7,13 @@ import lombok.NoArgsConstructor;
 import setting.SettingServer.entity.Member;
 import setting.SettingServer.entity.ProviderType;
 
+import java.io.Serializable;
+
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode
-public class MemberDto {
+public class MemberDto implements Serializable {
 
     private Long id;
     private String email;
