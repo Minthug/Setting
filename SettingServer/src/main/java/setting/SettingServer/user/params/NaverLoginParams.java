@@ -13,6 +13,8 @@ public class NaverLoginParams implements OAuthLoginParams {
 
     private String authorizationCode;
     private String state;
+    private String email;
+    private String name;
 
     @Override
     public ProviderType oAuthProvider() {

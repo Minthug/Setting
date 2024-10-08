@@ -12,6 +12,8 @@ import setting.SettingServer.user.OAuthLoginParams;
 public class KakaoLoginParams implements OAuthLoginParams {
 
     private String authorizationCode;
+    private String email;
+    private String name;
 
     @Override
     public ProviderType oAuthProvider() {

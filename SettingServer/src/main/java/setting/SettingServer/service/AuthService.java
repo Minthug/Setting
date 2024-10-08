@@ -7,6 +7,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import setting.SettingServer.common.exception.DuplicateEmailException;
+import setting.SettingServer.common.oauth.AuthTokens;
 import setting.SettingServer.common.oauth.RequestOAuthInfoService;
 import setting.SettingServer.config.jwt.dto.TokenDto;
 import setting.SettingServer.config.jwt.service.JwtService;
@@ -17,6 +18,7 @@ import setting.SettingServer.entity.Member;
 import setting.SettingServer.entity.ProviderType;
 import setting.SettingServer.entity.UserRole;
 import setting.SettingServer.repository.MemberRepository;
+import setting.SettingServer.user.OAuthLoginParams;
 
 import java.security.InvalidParameterException;
 import java.util.DuplicateFormatFlagsException;
@@ -74,9 +76,8 @@ public class AuthService {
     }
 
     @Transactional
-    public TokenDto login(LoginDto loginDto) {
-        Member member = memberRepository.findByEmail(loginDto.getEmail())
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+    public AuthTokens login(OAuthLoginParams params) {
+        Member member = findOrCreateMember(params);
 
         if (member.getType() == null) {
             member.updateProviderType(ProviderType.LOCAL);
@@ -84,7 +85,7 @@ public class AuthService {
         }
 
         if (member.getType() == ProviderType.LOCAL) {
-            if (!encoder.matches(loginDto.getPassword(), member.getPassword())) {
+            if (!encoder.matches(member.getPassword(), member.getPassword())) {
                 throw new IllegalArgumentException("Password not matched");
             }
         }
@@ -95,9 +96,22 @@ public class AuthService {
 //        jwtService.updateStoredToken(user.getEmail(), refreshToken, true); // access token은 바로 사용되므로 저장하지 않음
         jwtService.updateStoredToken(member.getEmail(), accessToken, false);
 
-        return new TokenDto(accessToken, refreshToken);
+        return new AuthTokens(accessToken, refreshToken, "Bearer ", 3600L);
     }
 
+    private Member findOrCreateMember(OAuthLoginParams params) {
+        return memberRepository.findByEmail(params.getEmail())
+                .orElseGet(() -> createMember(params));
+    }
+
+    private Member createMember(OAuthLoginParams params) {
+        Member member = Member.builder()
+                .email(params.getEmail())
+                .name(params.getName())
+                .type(params.oAuthProvider())
+                .build();
+        return memberRepository.save(member);
+    }
 
     @Transactional
     public Member registerOrUpdateUser(String email, String name, String providerId, String provider) {

@@ -1,14 +1,11 @@
 package setting.SettingServer.common.oauth;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
-@Setter
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class AuthTokens {
 
     private String accessToken;
@@ -17,6 +14,19 @@ public class AuthTokens {
     private Long expiresIn;
 
     public static AuthTokens of(String accessToken, String refreshToken, String grantType, Long expiresIn) {
-        return new AuthTokens(accessToken, refreshToken, grantType, expiresIn);
+        return AuthTokens.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .grantType(grantType)
+                .expiresIn(expiresIn)
+                .build();
+    }
+
+    public static AuthTokens fromOAuth2Response(String accessToken, String refreshToken, String grantType, Long expiresIn) {
+        return of(accessToken, refreshToken, grantType, expiresIn);
+    }
+
+    public static AuthTokens fromJwt(String accessToken, String refreshToken) {
+        return of(accessToken, refreshToken, "Bearer ", 3600L);
     }
 }

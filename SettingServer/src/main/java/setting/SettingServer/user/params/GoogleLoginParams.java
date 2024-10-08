@@ -12,6 +12,12 @@ import setting.SettingServer.user.OAuthLoginParams;
 public class GoogleLoginParams implements OAuthLoginParams {
 
     private String authorizationCode;
+    private String email;
+    private String name;
+
+    public GoogleLoginParams(String code) {
+        this.authorizationCode = code;
+    }
 
     @Override
     public ProviderType oAuthProvider() {

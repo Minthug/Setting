@@ -1,13 +1,12 @@
 package setting.SettingServer.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import setting.SettingServer.common.oauth.AuthTokens;
 import setting.SettingServer.config.jwt.service.LoginService;
+import setting.SettingServer.service.AuthService;
 import setting.SettingServer.user.params.GoogleLoginParams;
 import setting.SettingServer.user.params.KakaoLoginParams;
 import setting.SettingServer.user.params.NaverLoginParams;
