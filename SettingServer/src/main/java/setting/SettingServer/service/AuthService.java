@@ -76,7 +76,7 @@ public class AuthService {
     }
 
     @Transactional
-    public AuthTokens login(OAuthLoginParams params) {
+    public TokenDto login(OAuthLoginParams params) {
         Member member = findOrCreateMember(params);
 
         if (member.getType() == null) {
@@ -96,7 +96,7 @@ public class AuthService {
 //        jwtService.updateStoredToken(user.getEmail(), refreshToken, true); // access token은 바로 사용되므로 저장하지 않음
         jwtService.updateStoredToken(member.getEmail(), accessToken, false);
 
-        return new AuthTokens(accessToken, refreshToken, "Bearer ", 3600L);
+        return new TokenDto(accessToken, refreshToken);
     }
 
     private Member findOrCreateMember(OAuthLoginParams params) {

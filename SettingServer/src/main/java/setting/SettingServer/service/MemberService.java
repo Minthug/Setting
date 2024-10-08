@@ -11,7 +11,9 @@ import setting.SettingServer.common.exception.UserNotFoundException;
 import setting.SettingServer.dto.MemberDto;
 import setting.SettingServer.repository.MemberRepository;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -43,4 +45,24 @@ public class MemberService {
                 .orElseThrow(() -> new UserNotFoundException("Member not found with id: " + id));
     }
 
+    @Cacheable(cacheNames = "allMembersCache", unless = "#result.isEmpty()")
+    @Transactional(readOnly = true)
+    public List<MemberDto> findAllMember() {
+        String cacheKey = "allMembers";
+
+        List<MemberDto> cachedMembers = (List<MemberDto>) redisTemplate.opsForValue().get(cacheKey);
+        if (cachedMembers != null && !cachedMembers.isEmpty()) {
+            return cachedMembers;
+        }
+
+        List<MemberDto> members = memberRepository.findAll().stream()
+                .map(MemberDto::toDto)
+                .collect(Collectors.toList());
+
+        if (!members.isEmpty()) {
+            redisTemplate.opsForValue().set(cacheKey, (MemberDto) members, 1L, TimeUnit.HOURS);
+
+        }
+            return members;
+    }
 }

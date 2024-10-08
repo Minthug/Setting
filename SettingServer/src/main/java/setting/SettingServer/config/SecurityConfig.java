@@ -100,8 +100,8 @@ public class SecurityConfig {
     private void configureAuthorizeHttpRequests(AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry auth) {
         auth
                 .requestMatchers(PUBLIC_URLS).permitAll()
-                .requestMatchers(HttpMethod.GET, "/v1/users", "/v1/users/{id}").permitAll()
-                .requestMatchers(HttpMethod.PATCH, "/v1/users/{id}").hasAnyAuthority(USER_ADMIN_AUTHORITIES);
+                .requestMatchers(HttpMethod.GET, "/v1/members/", "/v1/members/{id}").permitAll()
+                .requestMatchers(HttpMethod.PATCH, "/v1/members/{id}").hasAnyAuthority(USER_ADMIN_AUTHORITIES);
 
         configureUserAdminRequests(auth);
         auth.anyRequest().authenticated();
@@ -109,8 +109,8 @@ public class SecurityConfig {
 
     private void configureUserAdminRequests(AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry auth) {
         auth
-                .requestMatchers(HttpMethod.GET, "/v1/users/profile").hasAnyAuthority(USER_ADMIN_AUTHORITIES)
-                .requestMatchers(HttpMethod.DELETE, "/v1/users/**").hasAnyAuthority(USER_ADMIN_AUTHORITIES);
+                .requestMatchers(HttpMethod.GET, "/v1/members/profile").hasAnyAuthority(USER_ADMIN_AUTHORITIES)
+                .requestMatchers(HttpMethod.DELETE, "/v1/members/**").hasAnyAuthority(USER_ADMIN_AUTHORITIES);
     }
 
     @Bean
