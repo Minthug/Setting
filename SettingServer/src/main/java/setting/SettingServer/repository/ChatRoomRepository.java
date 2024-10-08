@@ -7,6 +7,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.stereotype.Repository;
+import setting.SettingServer.dto.MemberDto;
 import setting.SettingServer.entity.chat.ChatRoom;
 import setting.SettingServer.service.redis.RedisSubscriberService;
 
@@ -22,7 +23,7 @@ public class ChatRoomRepository {
     private final RedisSubscriberService redisSubscriber;
 
     private static final String CHAT_ROOMS = "CHAT_ROOM";
-    private final RedisTemplate<String, Object> redisTemplate;
+    private final RedisTemplate<String, MemberDto> redisTemplate;
     private HashOperations<String, String, ChatRoom> opsHashChatRoom;
     private Map<String, ChannelTopic> topics;
 

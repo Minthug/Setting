@@ -2,7 +2,6 @@ package setting.SettingServer.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,7 +19,6 @@ import java.util.concurrent.TimeUnit;
 public class MemberService {
 
     private final MemberRepository memberRepository; // PostgreSQL
-    @Autowired
     private final RedisTemplate<String, MemberDto> redisTemplate; // Redis
     private final GcpStorageService gcpStorageService;
     private final PasswordEncoder encoder;
