@@ -95,6 +95,12 @@ public class MemberService {
         }
     }
 
+    @Transactional
+    public void deleteMember(Long id) {
+        Member member = findMemberById(id);
+        memberRepository.delete(member);
+    }
+
     private void updateRedisMemberCache(Member member) {
         String cacheKey = "member:" + member.getId();
         MemberDto memberDto = MemberDto.toDto(member);
