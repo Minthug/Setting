@@ -15,6 +15,7 @@ import setting.SettingServer.common.exception.UserNotFoundException;
 import setting.SettingServer.dto.MemberDto;
 import setting.SettingServer.dto.MemberResponseDto;
 import setting.SettingServer.dto.MemberUpdateDto;
+import setting.SettingServer.dto.ProfileDto;
 import setting.SettingServer.entity.Member;
 import setting.SettingServer.repository.MemberRepository;
 
@@ -36,19 +37,9 @@ public class MemberService {
     @Cacheable(cacheNames = "memberCache", key = "#id", unless = "#result == null")
     @Transactional(readOnly = true)
     public MemberDto findMember(Long id) {
-        String cacheKey = "member: " + id;
-
-        MemberDto cachedMember = redisTemplate.opsForValue().get(cacheKey);
-        if (cachedMember != null) {
-            return cachedMember;
-        }
 
         return memberRepository.findById(id)
-                .map(member -> {
-                    MemberDto dto = MemberDto.toDto(member);
-                    redisTemplate.opsForValue().set(cacheKey, dto,1, TimeUnit.HOURS);
-                    return dto;
-                })
+                .map(MemberDto::toDto)
                 .orElseThrow(() -> new UserNotFoundException("Member not found with id: " + id));
     }
 
@@ -67,12 +58,18 @@ public class MemberService {
                 .collect(Collectors.toList());
 
         if (!members.isEmpty()) {
-            redisTemplate.opsForValue().set(cacheKey, (MemberDto) members, 1L, TimeUnit.HOURS);
+            redisTemplate.opsForValue().set(cacheKey, (MemberDto) members, 1, TimeUnit.HOURS);
 
         }
             return members;
     }
 
+    @Transactional(readOnly = true)
+    public ProfileDto getProfile(String email) {
+        Member member = memberRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("Member not found with email: " + email));
+        return ProfileDto.fromMember(member);
+    }
 
     @Transactional
     public MemberResponseDto editMember(Long id, MemberUpdateDto updateDto) {

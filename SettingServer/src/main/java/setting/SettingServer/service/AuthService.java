@@ -7,6 +7,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import setting.SettingServer.common.exception.DuplicateEmailException;
+import setting.SettingServer.common.exception.LoginFailureException;
+import setting.SettingServer.common.exception.UserNotFoundException;
 import setting.SettingServer.common.oauth.AuthTokens;
 import setting.SettingServer.common.oauth.RequestOAuthInfoService;
 import setting.SettingServer.config.jwt.dto.TokenDto;
@@ -76,8 +78,9 @@ public class AuthService {
     }
 
     @Transactional
-    public TokenDto login(OAuthLoginParams params) {
-        Member member = findOrCreateMember(params);
+    public TokenDto login(LoginDto loginDto) {
+        Member member = memberRepository.findByEmail(loginDto.getEmail())
+                .orElseThrow(() -> new UserNotFoundException("Member not found"));
 
         if (member.getType() == null) {
             member.updateProviderType(ProviderType.LOCAL);
@@ -85,17 +88,16 @@ public class AuthService {
         }
 
         if (member.getType() == ProviderType.LOCAL) {
-            if (!encoder.matches(member.getPassword(), member.getPassword())) {
-                throw new IllegalArgumentException("Password not matched");
+            if (!encoder.matches(loginDto.getPassword(), member.getPassword())) {
+                throw new LoginFailureException("비밀번호가 일치하지 않습니다");
             }
         }
 
         String accessToken = jwtService.createToken(member.getEmail(), JwtTokenType.ACCESS);
         String refreshToken = jwtService.createToken(member.getEmail(), JwtTokenType.REFRESH);
 
-//        jwtService.updateStoredToken(user.getEmail(), refreshToken, true); // access token은 바로 사용되므로 저장하지 않음
-        jwtService.updateStoredToken(member.getEmail(), accessToken, false);
-
+        jwtService.updateStoredToken(member.getEmail(), accessToken, true);
+        jwtService.updateStoredRefreshToken(member.getEmail(), refreshToken);
         return new TokenDto(accessToken, refreshToken);
     }
 

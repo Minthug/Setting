@@ -100,7 +100,7 @@ public class SecurityConfig {
     private void configureAuthorizeHttpRequests(AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry auth) {
         auth
                 .requestMatchers(PUBLIC_URLS).permitAll()
-                .requestMatchers(HttpMethod.GET, "/v1/members/", "/v1/members/{id}").permitAll()
+                .requestMatchers(HttpMethod.GET, "/v1/members/", "/v1/members/{id}", "/v1/members").permitAll()
                 .requestMatchers(HttpMethod.PATCH, "/v1/members/{id}").hasAnyAuthority(USER_ADMIN_AUTHORITIES);
 
         configureUserAdminRequests(auth);
