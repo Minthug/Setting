@@ -2,7 +2,6 @@ package setting.SettingServer.dto.chat;
 
 import lombok.Data;
 import setting.SettingServer.entity.chat.ChatMessage;
-import setting.SettingServer.entity.chat.ChatRoom;
 
 import java.time.LocalDateTime;
 

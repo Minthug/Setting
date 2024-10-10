@@ -17,9 +17,11 @@ public class Member {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
+
     private String email;
     private String name;
     private String password;
+    private String userId;
 
     @Column(name = "image_url")
     private String imageUrl;

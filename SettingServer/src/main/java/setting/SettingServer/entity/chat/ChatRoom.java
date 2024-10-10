@@ -23,7 +23,7 @@ public class ChatRoom {
 
     @EqualsAndHashCode.Include
     @Id
-    private Long id;
+    private String id;
 
     @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private ChatMessage latestChatMessage;
@@ -37,11 +37,12 @@ public class ChatRoom {
     @CreatedDate
     private LocalDateTime createdAt;
 
-//    public static ChatRoom create() {
-//        ChatRoom chatRoom = new ChatRoom();
-//        chatRoom.setId(UUID.randomUUID().toString());
-//        return chatRoom;
-//    }
+    public static ChatRoom create() {
+        ChatRoom room = new ChatRoom();
+
+        room.setId(UUID.randomUUID().toString());
+        return room;
+    }
 
     public void addMembers(Member roomMaker, Member guest) {
         this.chatRoomMembers.add(roomMaker);

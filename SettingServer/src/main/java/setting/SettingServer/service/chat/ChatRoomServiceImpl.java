@@ -8,9 +8,7 @@ import setting.SettingServer.common.chat.ChatRoomAccessDeniedException;
 import setting.SettingServer.common.chat.ChatRoomNotFoundException;
 import setting.SettingServer.common.exception.UserNotFoundException;
 import setting.SettingServer.config.SecurityUtil;
-import setting.SettingServer.dto.chat.ChatDto;
-import setting.SettingServer.dto.chat.ChatMessageInfo;
-import setting.SettingServer.dto.chat.ChatUserInfoDto;
+import setting.SettingServer.dto.chat.*;
 import setting.SettingServer.entity.Member;
 import setting.SettingServer.entity.chat.ChatMessage;
 import setting.SettingServer.entity.chat.ChatRoom;
@@ -32,7 +30,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     private final SecurityUtil securityUtil;
 
     @Override
-    public ChatDto.CreateChatRoomResponse createChatRoomForPersonal(ChatDto.CreateChatRoomRequest chatRoomRequest) {
+    public CreatedChatRoomResponse createChatRoomForPersonal(CreatedChatRoomRequest chatRoomRequest) {
         Long id = Long.parseLong(securityUtil.getCurrentMemberUsername());
         if (!id.equals(chatRoomRequest.getRoomMakerId())) {
             throw new UserNotFoundException("");
@@ -40,7 +38,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
 
         Long sharedChatRoomId = chatRoomRepository.findSharedChatRoom(chatRoomRequest.getGuestId(), chatRoomRequest.getRoomMakerId());
         if (sharedChatRoomId != null) {
-            return new ChatDto.CreateChatRoomResponse(chatRoomRequest.getRoomMakerId(), chatRoomRequest.getGuestId(), sharedChatRoomId);
+            return new CreatedChatRoomResponse(chatRoomRequest.getRoomMakerId(), chatRoomRequest.getGuestId(), sharedChatRoomId);
         }
         Member roomMaker = memberRepository.findById(id).orElseThrow(() -> new UserNotFoundException("유저를 찾을 수 없습니다."));
         Member guest = memberRepository.findById(chatRoomRequest.getGuestId()).orElseThrow(() -> new UserNotFoundException("유저를 찾을 수 없습니다"));
@@ -50,14 +48,14 @@ public class ChatRoomServiceImpl implements ChatRoomService {
 
         ChatRoom savedRoom = chatRoomRepository.save(newRoom);
 
-        return new ChatDto.CreateChatRoomResponse(roomMaker.getId(), guest.getId(), savedRoom.getId());
+        return new CreatedChatRoomResponse(roomMaker.getId(), guest.getId(), savedRoom.getId());
     }
 
     @Override
-    public ChatDto.ChatRoomInfoResponse chatRoomInfo(long roomId, int page, int size) {
+    public ChatRoomInfoResponse chatRoomInfo(long roomId, int page, int size) {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)
                 .orElseThrow(() -> new ChatRoomNotFoundException("채팅방을 찾을 수 없습니다"));
-        ChatDto.ChatRoomInfoResponse chatRoomInfoResponse = new ChatDto.ChatRoomInfoResponse(chatRoom);
+        ChatRoomInfoResponse chatRoomInfoResponse = new ChatRoomInfoResponse(chatRoom);
 
         Set<ChatUserInfoDto> chatRoomMembers = chatRoomInfoResponse.getChatRoomMembers();
         Long currentRoomId = Long.parseLong(securityUtil.getCurrentMemberUsername());
@@ -98,7 +96,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     }
 
     @Override
-    public ChatDto.ChatRoomListResponse getChatRoomList(int page, int size) {
+    public ChatRoomListResponse getChatRoomList(int page, int size) {
         return null;
     }
 }
