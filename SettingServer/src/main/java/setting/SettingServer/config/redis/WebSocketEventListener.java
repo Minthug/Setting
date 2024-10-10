@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.socket.messaging.SessionConnectedEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 import setting.SettingServer.entity.chat.ChatMessage;
+import setting.SettingServer.entity.chat.MessageType;
 
 @Component
 @Slf4j
@@ -30,7 +31,7 @@ public class WebSocketEventListener {
         if (username != null) {
             log.info("User Disconnected : {}", username);
             ChatMessage chatMessage = new ChatMessage();
-            chatMessage.setType(ChatMessage.MessageType.LEAVE);
+            chatMessage.setType(MessageType.LEAVE);
             chatMessage.setSender(username);
             messagingTemplate.convertAndSend("/topic/public", chatMessage);
         }
