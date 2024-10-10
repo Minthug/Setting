@@ -20,7 +20,7 @@ public class ChatMessage {
     @Id
     @EqualsAndHashCode.Include
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
 
     @JoinColumn(name = "roomId", insertable = false, updatable = false)
     private String roomId;

@@ -3,7 +3,7 @@ package setting.SettingServer.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.RestController;
-import setting.SettingServer.repository.ChatRoomRepository;
+import setting.SettingServer.repository.chat.ChatRoomRepository;
 import setting.SettingServer.service.chat.ChatRoomService;
 import setting.SettingServer.service.redis.RedisPubSubService;
 

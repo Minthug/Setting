@@ -18,18 +18,18 @@ public class ChatDto {
 
     @Getter
     public static class CreateChatRoomRequest {
-        private String roomMakerId;
-        private String guestId;
+        private long roomMakerId;
+        private long guestId;
 
     }
 
     @Getter
     public static class CreateChatRoomResponse {
-        private String roomMakerId;
-        private String guestId;
-        private String chatRoomId;
+        private long roomMakerId;
+        private long guestId;
+        private long chatRoomId;
 
-        public CreateChatRoomResponse(String roomMakerId, String guestId, String chatRoomId) {
+        public CreateChatRoomResponse(long roomMakerId, long guestId, long chatRoomId) {
             this.roomMakerId = roomMakerId;
             this.guestId = guestId;
             this.chatRoomId = chatRoomId;
@@ -43,7 +43,7 @@ public class ChatDto {
 
     @Data
     public static class ChatRoomInfoResponse {
-        private String chatRoomId;
+        private long chatRoomId;
         private ChatMessage lastChatMesg;
         private Set<ChatUserInfoDto> chatRoomMembers;
         private List<ChatMessageInfo> latestChatMessages;
@@ -71,7 +71,7 @@ public class ChatDto {
 
     @Data
     public static class ChatRoomList {
-        private String chatRoomId;
+        private Long chatRoomId;
         private ChatMessage lastChatMsg;
         private String guestId;
 
