@@ -49,7 +49,8 @@ public class SecurityConfig {
 
     private static final String[] PUBLIC_URLS = {
             "/v1/auth/**", "/v1/upload/**", "/v1/boards","/oauth2/authorization/**", "/",
-            "/css/**", "/images/**", "/js/**", "/h2-console/**", "/favicon.ico", "/error", "/v1/oauth/**"
+            "/css/**", "/images/**", "/js/**", "/h2-console/**", "/favicon.ico", "/error", "/v1/oauth/**",
+            "/v1/chat/**"
         };
 
     private static final String[] USER_ADMIN_AUTHORITIES = {"USER", "ADMIN"};

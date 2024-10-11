@@ -16,6 +16,7 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, String> {
     "JOIN cr.chatRoomMembers m2 " +
     "WHERE m1.id = :userId1 AND m2.id = :userId2")
     String findSharedChatRoom(@Param("userId2") String guestId, @Param("userId1") String roomMakerId);
+
 }
     /*
     private final RedisMessageListenerContainer redisMessageListener;

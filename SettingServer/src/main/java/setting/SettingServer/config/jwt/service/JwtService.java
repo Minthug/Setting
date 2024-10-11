@@ -13,6 +13,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.User;
@@ -84,6 +85,11 @@ public class JwtService {
         } catch (JwtException e) {
             return false;
         }
+    }
+
+
+    public String extractJwt(final StompHeaderAccessor accessor) {
+        return accessor.getFirstNativeHeader("Authorization");
     }
 
     // Token Creation
