@@ -10,9 +10,9 @@ public interface ChatRoomService {
 
     public CreatedChatRoomResponse createChatRoomForPersonal(CreatedChatRoomRequest chatRoomRequest);
 
-    public ChatRoomInfoResponse chatRoomInfo(long roomId, int page, int size);
+    public ChatRoomInfoResponse chatRoomInfo(String roomId, int page, int size);
 
-    public ChatRoom findById(long chatRoomId);
+    public ChatRoom findById(String chatRoomId);
 
     public ChatRoomListResponse getChatRoomList(int page, int size);
 }

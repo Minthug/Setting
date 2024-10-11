@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import setting.SettingServer.entity.chat.ChatRoom;
 
-public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
+public interface ChatRoomRepository extends JpaRepository<ChatRoom, String> {
 
     Page<ChatRoom> findByChatRoomMembersId(String userId, Pageable pageable);
 
@@ -15,7 +15,7 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
     "JOIN cr.chatRoomMembers m1 " +
     "JOIN cr.chatRoomMembers m2 " +
     "WHERE m1.id = :userId1 AND m2.id = :userId2")
-    long findSharedChatRoom(@Param("userId2") long guestId, @Param("userId1") long roomMakerId);
+    String findSharedChatRoom(@Param("userId2") String guestId, @Param("userId1") String roomMakerId);
 }
     /*
     private final RedisMessageListenerContainer redisMessageListener;

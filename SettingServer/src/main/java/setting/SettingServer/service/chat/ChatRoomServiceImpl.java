@@ -15,7 +15,9 @@ import setting.SettingServer.entity.chat.ChatRoom;
 import setting.SettingServer.repository.chat.ChatMessageRepository;
 import setting.SettingServer.repository.chat.ChatRoomRepository;
 import setting.SettingServer.repository.MemberRepository;
+import setting.SettingServer.repository.chat.UserRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -25,48 +27,50 @@ import java.util.stream.Collectors;
 public class ChatRoomServiceImpl implements ChatRoomService {
 
     private final MemberRepository memberRepository;
+    private final UserRepository userRepository;
     private final ChatRoomRepository chatRoomRepository;
     private final ChatMessageRepository chatMessageRepository;
     private final SecurityUtil securityUtil;
 
     @Override
     public CreatedChatRoomResponse createChatRoomForPersonal(CreatedChatRoomRequest chatRoomRequest) {
-        Long id = Long.parseLong(securityUtil.getCurrentMemberUsername());
+        String id = securityUtil.getCurrentMemberUsername();
         if (!id.equals(chatRoomRequest.getRoomMakerId())) {
             throw new UserNotFoundException("");
         }
 
-        Long sharedChatRoomId = chatRoomRepository.findSharedChatRoom(chatRoomRequest.getGuestId(), chatRoomRequest.getRoomMakerId());
+        String sharedChatRoomId = chatRoomRepository.findSharedChatRoom(chatRoomRequest.getGuestId(), chatRoomRequest.getRoomMakerId());
         if (sharedChatRoomId != null) {
             return new CreatedChatRoomResponse(chatRoomRequest.getRoomMakerId(), chatRoomRequest.getGuestId(), sharedChatRoomId);
         }
-        Member roomMaker = memberRepository.findById(id).orElseThrow(() -> new UserNotFoundException("유저를 찾을 수 없습니다."));
-        Member guest = memberRepository.findById(chatRoomRequest.getGuestId()).orElseThrow(() -> new UserNotFoundException("유저를 찾을 수 없습니다"));
+        Member roomMaker = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("유저를 찾을 수 없습니다."));
+        Member guest = userRepository.findById(chatRoomRequest.getGuestId()).orElseThrow(() -> new UserNotFoundException("유저를 찾을 수 없습니다"));
 
         ChatRoom newRoom = new ChatRoom();
         newRoom.addMembers(roomMaker, guest);
 
-        ChatRoom savedRoom = chatRoomRepository.save(newRoom);
+        chatRoomRepository.save(newRoom);
 
-        return new CreatedChatRoomResponse(roomMaker.getId(), guest.getId(), savedRoom.getId());
+        return new CreatedChatRoomResponse(roomMaker.getUserId(), guest.getUserId(), newRoom.getId());
     }
 
     @Override
-    public ChatRoomInfoResponse chatRoomInfo(long roomId, int page, int size) {
+    public ChatRoomInfoResponse chatRoomInfo(String roomId, int page, int size) {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)
                 .orElseThrow(() -> new ChatRoomNotFoundException("채팅방을 찾을 수 없습니다"));
         ChatRoomInfoResponse chatRoomInfoResponse = new ChatRoomInfoResponse(chatRoom);
 
         Set<ChatUserInfoDto> chatRoomMembers = chatRoomInfoResponse.getChatRoomMembers();
-        Long currentRoomId = Long.parseLong(securityUtil.getCurrentMemberUsername());
-        if (!chatRoomMembers.contains(new ChatUserInfoDto(memberRepository.findById(currentRoomId).get()))) {
+        if (!chatRoomMembers.contains(new ChatUserInfoDto(userRepository.findById(securityUtil.getCurrentMemberUsername()).get()))) {
             throw new ChatRoomAccessDeniedException("권한이 없습니다.");
         }
 
         List<ChatMessage> latestChatMessages = findChatMessagesWithPaging(page, size, roomId);
-        List<ChatMessageInfo> chatMessageInfos = latestChatMessages.stream()
-                .map(ChatMessageInfo::new)
-                .collect(Collectors.toList());
+        List<ChatMessageInfo> chatMessageInfos = new ArrayList<>();
+
+        for (ChatMessage chatMessage : latestChatMessages) {
+            chatMessageInfos.add(new ChatMessageInfo(chatMessage));
+        }
 
         chatRoomInfoResponse.setLatestChatMessages(chatMessageInfos);
         return chatRoomInfoResponse;
@@ -81,7 +85,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         return chatRooms;
     }
 
-    public List<ChatMessage> findChatMessagesWithPaging(int page, int size, long roomId) {
+    public List<ChatMessage> findChatMessagesWithPaging(int page, int size, String roomId) {
         Sort sort = Sort.by("createdAt").descending();
         PageRequest pageRequest = PageRequest.of(page - 1, size, sort);
 
@@ -91,12 +95,26 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     }
 
     @Override
-    public ChatRoom findById(long chatRoomId) {
+    public ChatRoom findById(String chatRoomId) {
         return chatRoomRepository.findById(chatRoomId).orElseThrow();
     }
 
     @Override
     public ChatRoomListResponse getChatRoomList(int page, int size) {
-        return null;
+        String userId = securityUtil.getCurrentMemberUsername();
+
+        List<ChatRoom> chatRooms = findChatRoomsWithPaging(page, size, userId);
+        List<ChatRoomList> chatRoomInfo = new ArrayList<>();
+        for (ChatRoom chatRoom : chatRooms) {
+            chatRoomInfo.add(new ChatRoomList(chatRoom, userId));
+        }
+
+        ChatRoomListResponse info = ChatRoomListResponse.builder()
+                .page(page)
+                .count(chatRooms.size())
+                .reqUserId(userId)
+                .chatRooms(chatRoomInfo)
+                .build();
+        return info;
     }
 }

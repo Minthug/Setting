@@ -9,7 +9,7 @@ import java.util.List;
 @Builder
 public class ChatRoomListResponse {
     private int page;
-    private int size;
+    private int count;
     private String reqUserId;
     private List<ChatRoomList> chatRooms;
 
