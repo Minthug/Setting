@@ -28,7 +28,7 @@ public class MemberController {
         return ResponseEntity.ok(member);
     }
 
-    @GetMapping("")
+    @GetMapping("/findAll")
     public ResponseEntity<List<MemberDto>> findAllMember() {
         List<MemberDto> members = memberService.findAllMember();
         return ResponseEntity.ok(members);
