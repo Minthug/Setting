@@ -5,6 +5,7 @@ import io.jsonwebtoken.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import setting.SettingServer.entity.GcpStorageFile;
@@ -36,6 +37,8 @@ public class GcpStorageService {
             } catch (IOException e) {
                 log.error("File upload failed for file: {}", multipartFile.getOriginalFilename(), e);
                 gcpFiles.add(createFailedGcpStorageFile(multipartFile.getOriginalFilename(), e.getMessage()));
+            } catch (java.io.IOException e) {
+                throw new RuntimeException(e);
             }
         }
         return gcpFiles;
@@ -72,6 +75,15 @@ public class GcpStorageService {
         return UUID.randomUUID().toString() + "." + ext;
     }
 
+    private GcpStorageFile createGcpStorageFile(String originalFilename, String uploadFilename, String uploadFilePath, String uploadFileUrl) {
+        return GcpStorageFile.builder()
+                .originalFilename(originalFilename)
+                .uploadFilename(originalFilename)
+                .uploadFilePath(uploadFilePath)
+                .uploadFileUrl(uploadFileUrl)
+                .build();
+    }
+
     private GcpStorageFile createFailedGcpStorageFile(String originalFilename, String message) {
         return GcpStorageFile.builder()
                 .originalFilename(originalFilename)
@@ -81,6 +93,37 @@ public class GcpStorageService {
                 .uploadSuccessful(false)
                 .errorMessage(message)
                 .build();
+    }
+
+//    public boolean deleteFolder(Long memberId, Long boardId) {
+//        String folderPrefix = String.format("members/%d/%d/", memberId, boardId);
+//
+//        try {
+//            Page<Blob> blobs = storage.list(bucketName, Storage.BlobListOption.prefix(folderPrefix));
+//
+//            for (Blob blob : blobs.iterator()) {
+//
+//            }
+//        }
+
+    public boolean deleteFile(String fileUrl) {
+        try {
+            BlobId blobId = BlobId.of(bucketName, getBlobNameFromUrl(fileUrl));
+            boolean deleted = storage.delete(blobId);
+            if (deleted) {
+                log.info("File delete is complated. BlobName: {}", blobId.getName());
+            } else {
+                log.warn("File does not exist. BlobName: {}", blobId.getName());
+            }
+            return deleted;
+        } catch (StorageException e) {
+            log.error("Failed to delete File: {}", e);
+            throw new RuntimeException("Failed to delete File. {}", e);
+        }
+    }
+
+    private String getBlobNameFromUrl(String fileUrl) {
+        throw new UnsupportedOperationException("Method not implemented");
     }
 
 
