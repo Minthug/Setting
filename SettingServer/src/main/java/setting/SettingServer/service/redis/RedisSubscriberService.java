@@ -24,7 +24,7 @@ public class RedisSubscriberService implements MessageListener {
         try {
             String publishMessage = (String) redisTemplate.getStringSerializer().deserialize(message.getBody());
             ChatMessage roomMessage = objectMapper.readValue(publishMessage, ChatMessage.class);
-            messagingTemplate.convertAndSend("/topic/public", roomMessage);
+            messagingTemplate.convertAndSend("/pub/public", roomMessage);
         } catch (Exception e) {
             log.error("Exception {}", e);
         }
